@@ -1,79 +1,40 @@
 <?php
-require 'koneksi.php';  // Memasukkan definisi kelas Database
+require 'koneksi.php';
+$database = new Database();
+$conn = $database->connect();
 
-$database = new Database(); // Membuat instance dari kelas Database
-$conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi PDO
+// Fetch total count of data from the preprocessing table
+$totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
+$totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
+$totalCount = $totalResult['total'];
 
-$message_import = "";
-$message_delete = "";
-if (isset($_POST["import"])) {
-    $fileName = $_FILES["file"]["tmp_name"];
+// Calculate training and testing counts
+$trainingCount = round($totalCount * 0.8);
+$testingCount = round($totalCount * 0.2);
 
-    if ($_FILES["file"]["size"] > 0) {
-        $file = fopen($fileName, "r");
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['splitData'])) {
+    try {
+        $conn->beginTransaction();
 
-        if ($file !== FALSE) {
-            fgetcsv($file); // Mengabaikan baris pertama (header)
-            while (($column = fgetcsv($file, 10000, ",")) !== FALSE) {
-                if (isset($column[4])) {
-                    $title = $conn->quote($column[4]);
-                    $query = "SELECT 1 FROM data_raw WHERE title = $title";
-                    $check = $conn->query($query);
+        // Truncate the existing data_training and data_testing tables
+        $conn->exec("TRUNCATE TABLE data_training");
+        $conn->exec("TRUNCATE TABLE data_testing");
 
-                    if ($check->rowCount() == 0) {
-                        if (count($column) >= 17) { // Pastikan semua kolom ada
-                            $id = $conn->quote($column[0]);
-                            $authors = $conn->quote($column[1]);
-                            $status = $conn->quote($column[2]);
-                            $classification = $conn->quote($column[3]);
-                            $content = $conn->quote($column[5]);
-                            $fact = $conn->quote($column[6]);
-                            $references_link = $conn->quote($column[7]);
-                            $source_issue = $conn->quote($column[8]);
-                            $source_link = $conn->quote($column[9]);
-                            $picture1 = $conn->quote($column[10]);
-                            $picture2 = $conn->quote($column[11]);
-                            $tanggal = $conn->quote($column[12]);
-                            $tags = $conn->quote($column[13]);
-                            $conclusion = $conn->quote($column[14]);
-                            $claim_review = $conn->quote($column[15]);
-                            $media = $conn->quote($column[16]);
+        // Insert 80% of data into data_training
+        $conn->exec("INSERT INTO data_training SELECT * FROM data_preprocessing ORDER BY RAND() LIMIT $trainingCount");
 
-                            $sqlInsert = "INSERT INTO data_raw (id, authors, status, classification, title, content, fact, references_link, source_issue, source_link, picture1, picture2, tanggal, tags, conclusion, claim_review, media) VALUES ($id, $authors, $status, $classification, $title, $content, $fact, $references_link, $source_issue, $source_link, $picture1, $picture2, $tanggal, $tags, $conclusion, $claim_review, $media)";
-                            $result = $conn->exec($sqlInsert);
+        // Insert the remaining 20% into data_testing
+        $conn->exec("INSERT INTO data_testing SELECT * FROM data_preprocessing WHERE id NOT IN (SELECT id FROM data_training)");
 
-                            $message_import = $result ? "Data berhasil diimpor." : "Error pada saat import data.";
-                        } else {
-                            $message_import = "Error: Data CSV tidak lengkap atau tidak valid.";
-                        }
-                    } else {
-                        $message_import = "Duplikasi judul ditemukan dan diabaikan: $title";
-                    }
-                }
-            }
-            fclose($file);
-        } else {
-            $message_import = "Error: Gagal membuka file CSV.";
-        }
-    } else {
-        $message_import = "Error: Ukuran file CSV kosong atau terlalu kecil.";
+        $conn->commit();
+        echo '<div class="alert alert-success" role="alert">Data split successfully!</div>';
+    } catch (Exception $e) {
+        $conn->rollBack();
+        echo '<div class="alert alert-danger" role="alert">Failed to split data: ' . $e->getMessage() . '</div>';
     }
 }
-
-if (isset($_POST['delete_all'])) {
-    $deleteQuery = "DELETE FROM data_raw";  // Ganti 'data_raw' dengan nama tabel Anda
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->execute();
-    $message_delete = "Semua data berhasil dihapus.";
-}
-
-// Mengambil data dari database untuk ditampilkan
-$query = "SELECT id, title, status FROM data_raw";  // Menyesuaikan kolom yang diambil
-$stmt = $conn->prepare($query);
-$stmt->execute();
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -225,10 +186,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- ============================================================== -->
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Import Data</h3>
+                        <h3 class="text-themecolor">Split Data</h3>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                            <li class="breadcrumb-item active">Import Data</li>
+                            <li class="breadcrumb-item active">Split Data</li>
                         </ol>
                     </div>
                 </div>
@@ -239,68 +200,61 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <!-- Card Container -->
                     <div class="card">
                         <!-- Card Header -->
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <form class="form-horizontal" action="" method="post" name="uploadCsv" enctype="multipart/form-data">
-                                <div class="mb-3">
-                                    <p>Anda bisa melakukan import data dengan format</p>
-                                    <ul>
-                                        <li>XLS</li>
-                                        <li>XLX</li>
-                                        <li>XLSX</li>
-                                        <li>CSV</li>
-                                    </ul>
-                                    <label for="file" class="form-label"></label>
-                                    <input type="file" class="form-control" id="file" name="file" accept=".csv">
-                                </div>
-                                <div class="mb-3 text-center">
-                                    <button type="submit" class="btn btn-primary d-block w-100" name="import">Import Data ke Database</button>
-                                </div>
-
-                            </form>
-                            <?php if (!empty($message_import)) : ?>
-                                <div class="alert alert-info"><?php echo $message_import; ?></div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    <!-- Card Container -->
-                    <div class="card">
-                        <!-- Card Header -->
                         <div class="card-header">
-                            <h4 class="card-title">Hasil Data</h4>
+                            <h4 class="card-title">Split Data</h4>
                         </div>
                         <!-- Card Body -->
                         <div class="card-body">
-                            <form method="post">
-                                <button type="submit" class="btn btn-danger" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
-                            </form>
+                            <div class="row">
+                                <div class="col-6">
+                                    <form action="" method="post">
+                                        <button type="submit" class="btn btn-primary w-100" name="run_preprocessing">Split Data</button>
+                                    </form>
+                                </div>
+                                <div class="col-6">
+                                    <form method="post">
+                                        <button type="submit" class="btn btn-danger w-100" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Data Latih dan Uji</button>
+                                    </form>
+                                </div>
+                            </div>
                             <?php if (!empty($message_delete)) : ?>
                                 <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
                             <?php endif; ?>
-                            <table class="table table-striped" id="dataTable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Data Asli</th> <!-- Ini sebelumnya adalah 'Author' -->
-                                        <th>Labelling</th> <!-- Ini sebelumnya adalah 'Status' -->
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($results as $row) : ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($row['id']) ?></td>
-                                            <td><?= htmlspecialchars($row['title']) ?></td> <!-- Menggunakan kolom 'title' -->
-                                            <td><?= htmlspecialchars($row['status']) ?></td> <!-- Tetap menggunakan kolom 'status' -->
-                                        </tr>
-                                    <?php endforeach; ?>
-                                    <?php if (empty($results)) : ?>
-                                        <tr>
-                                            <td colspan="3">No data found</td> <!-- Ubah colspan menjadi 3 karena sekarang hanya ada tiga kolom -->
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-
+                            <?php if (!empty($message_preprocessing)) : ?>
+                                <div class="alert alert-info mt-2"><?php echo $message_preprocessing; ?></div>
+                            <?php endif; ?>
+                            <div class="container mt-5">
+                                <div class="row">
+                                    <!-- Training Data Card -->
+                                    <div class="col-md-6">
+                                        <div class="card text-center">
+                                            <div class="card-body card-horizontal">
+                                                <div class="mr-4">
+                                                    <h4 class="card-title">Jumlah Data Latih</h4>
+                                                    <h2 class="display-4"><?= $trainingCount ?></h2>
+                                                    <div class="card-body-icon">
+                                                        <i class="fa-solid fa-dumbbell"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Testing Data Card -->
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-body card-horizontal">
+                                                <div class="mr-4">
+                                                    <h4 class="card-title">Jumlah Data Uji</h4>
+                                                    <h2 class="display-4"><?= $testingCount ?></h2>
+                                                    <div class="card-body-icon">
+                                                        <i class="fas fa-vial"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -357,6 +311,39 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Page level custom scripts -->
     <script src="datatables/datatables-demo.js"></script>
+    <style>
+        .card-horizontal {
+            display: flex;
+            flex: 1 1 auto;
+            position: relative;
+            padding-right: 50px;
+            /* Padding to ensure text does not overlap icon */
+            border-radius: 0.25rem;
+            /* Rounded corners matching Bootstrap's style */
+        }
+
+        .card-body-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 24px;
+            /* Normal icon size */
+        }
+
+        .bold-text {
+            font-weight: bold;
+            /* Bold font for the numbers */
+        }
+
+        .card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Subtle shadow */
+            border: none;
+            /* Remove border */
+        }
+    </style>
+
 </body>
 
 </html>
