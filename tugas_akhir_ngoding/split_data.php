@@ -3,37 +3,60 @@ require 'koneksi.php';
 $database = new Database();
 $conn = $database->connect();
 
-// Fetch total count of data from the preprocessing table
-$totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
-$totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
-$totalCount = $totalResult['total'];
+// Initialize count variables
+$trainingCount = 0;
+$testingCount = 0;
 
-// Calculate training and testing counts
-$trainingCount = round($totalCount * 0.8);
-$testingCount = round($totalCount * 0.2);
+// Fetch current counts from the database
+function fetchCounts($conn)
+{
+    $totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
+    $totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
+    $totalCount = $totalResult['total'];
+    global $trainingCount, $testingCount;
+    $trainingCount = round($totalCount * 0.8);
+    $testingCount = round($totalCount * 0.2);
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['splitData'])) {
-    try {
-        $conn->beginTransaction();
+// Handle form submissions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['splitData'])) {
+        // Calculate training and testing counts
+        $totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
+        $totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
+        $totalCount = $totalResult['total'];
+        $trainingCount = round($totalCount * 0.8);
+        $testingCount = round($totalCount * 0.2);
 
-        // Truncate the existing data_training and data_testing tables
+        // Truncate existing tables
         $conn->exec("TRUNCATE TABLE data_training");
         $conn->exec("TRUNCATE TABLE data_testing");
 
-        // Insert 80% of data into data_training
-        $conn->exec("INSERT INTO data_training SELECT * FROM data_preprocessing ORDER BY RAND() LIMIT $trainingCount");
+        // Insert data into data_training
+        $conn->exec("INSERT INTO data_training (id_training, real_text, label) 
+                     SELECT id, teks, label 
+                     FROM data_preprocessing 
+                     ORDER BY RAND() LIMIT $trainingCount");
 
-        // Insert the remaining 20% into data_testing
-        $conn->exec("INSERT INTO data_testing SELECT * FROM data_preprocessing WHERE id NOT IN (SELECT id FROM data_training)");
+        // Insert data into data_testing
+        $conn->exec("INSERT INTO data_testing (id_testing, real_text, label) 
+                     SELECT id, teks, label 
+                     FROM data_preprocessing 
+                     WHERE id NOT IN (SELECT id_training FROM data_training)");
 
-        $conn->commit();
-        echo '<div class="alert alert-success" role="alert">Data split successfully!</div>';
-    } catch (Exception $e) {
-        $conn->rollBack();
-        echo '<div class="alert alert-danger" role="alert">Failed to split data: ' . $e->getMessage() . '</div>';
+        fetchCounts($conn);  // Update counts after the operation
+    } elseif (isset($_POST['delete_all'])) {
+        // Perform delete operation
+        $conn->exec("TRUNCATE TABLE data_training");
+        $conn->exec("TRUNCATE TABLE data_testing");
+        $trainingCount = 0;
+        $testingCount = 0;
     }
 }
+
 ?>
+
+
 
 
 <!DOCTYPE html>
@@ -208,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['splitData'])) {
                             <div class="row">
                                 <div class="col-6">
                                     <form action="" method="post">
-                                        <button type="submit" class="btn btn-primary w-100" name="run_preprocessing">Split Data</button>
+                                        <button type="submit" class="btn btn-primary w-100" name="splitData">Split Data</button>
                                     </form>
                                 </div>
                                 <div class="col-6">
@@ -343,6 +366,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['splitData'])) {
             /* Remove border */
         }
     </style>
+
+
 
 </body>
 
