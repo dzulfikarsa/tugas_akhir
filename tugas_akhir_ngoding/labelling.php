@@ -216,63 +216,59 @@
                             </ol>
                         </div>
                     </div>
+
                     <div class="container mt-5">
-                        <div class="card-body">
-                            <div class="container mt-5">
-                                <!-- Card Container -->
-                                <div class="card">
-                                    <!-- Card Header -->
-                                    <div class="card-header">
-                                        <h4 class="card-title">Labelling</h4>
-                                    </div>
-                                    <!-- Card Body -->
-                                    <div class="card-body">
-                                        <table class="table table-striped" id="dataTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>ID</th>
-                                                    <th>Clean Text</th>
-                                                    <th>Label</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($results as $row) : ?>
-                                                    <tr>
-                                                        <td><?= htmlspecialchars($row['id']) ?></td>
-                                                        <td><?= htmlspecialchars($row['teks']) ?></td>
-                                                        <td>
-                                                            <form method="post" action="">
-                                                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                                                <input type="hidden" name="update_label" value="1">
-                                                                <select name="label" class="form-control status-dropdown" onchange="this.form.submit()">
-                                                                    <option value="Hoax" <?= $row['label'] === 'Hoax' ? 'selected' : '' ?>>Hoax</option>
-                                                                    <option value="Non-Hoax" <?= $row['label'] === 'Non-Hoax' ? 'selected' : '' ?>>Non-Hoax</option>
-                                                                </select>
-                                                            </form>
-                                                        </td>
-                                                        <td></td>
-                                                    </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-
-                                    </div>
-                                </div>
+                        <!-- Card Container -->
+                        <div class="card">
+                            <!-- Card Header -->
+                            <div class="card-header">
+                                <h4 class="card-title">Labelling</h4>
                             </div>
+                            <!-- Card Body -->
+                            <div class="card-body">
+                                <table class="table table-striped" id="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Clean Text</th>
+                                            <th>Label</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($results as $row) : ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($row['id']) ?></td>
+                                                <td><?= htmlspecialchars($row['teks']) ?></td>
+                                                <td>
+                                                    <form method="post" action="">
+                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                        <input type="hidden" name="update_label" value="1">
+                                                        <select name="label" class="form-control status-dropdown" onchange="this.form.submit()">
+                                                            <option value="Hoax" <?= $row['label'] === 'Hoax' ? 'selected' : '' ?>>Hoax</option>
+                                                            <option value="Non-Hoax" <?= $row['label'] === 'Non-Hoax' ? 'selected' : '' ?>>Non-Hoax</option>
+                                                        </select>
+                                                    </form>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
 
+                            </div>
                         </div>
-                        <!-- ============================================================== -->
-                        <!-- End Container fluid  -->
-                        <!-- ============================================================== -->
-                        <!-- ============================================================== -->
-                        <!-- footer -->
-                        <!-- ============================================================== -->
-                        <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
-                        <!-- ============================================================== -->
-                        <!-- End footer -->
-                        <!-- ============================================================== -->
                     </div>
+                    <!-- ============================================================== -->
+                    <!-- End Container fluid  -->
+                    <!-- ============================================================== -->
+                    <!-- ============================================================== -->
+                    <!-- footer -->
+                    <!-- ============================================================== -->
+                    <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
+                    <!-- ============================================================== -->
+                    <!-- End footer -->
+                    <!-- ============================================================== -->
                     <!-- ============================================================== -->
                     <!-- End Page wrapper  -->
                     <!-- ============================================================== -->

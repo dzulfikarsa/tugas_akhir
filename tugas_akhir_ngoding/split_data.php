@@ -230,9 +230,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
 
-                <div class="row page-titles">
-                </div>
-
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">

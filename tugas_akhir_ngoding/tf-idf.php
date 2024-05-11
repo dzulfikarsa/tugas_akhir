@@ -5,62 +5,87 @@ $conn = $database->connect();
 
 $message_submit = "";
 $message_delete = "";
+$highest_score = 0;
+$highest_score_text = "";
+$highest_score_index = 0;
+$current_index = 1;
+$show_table = false;  // Flag to control table visibility
 
-// Check if the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
-    // Execute the Python script
-    exec("python util/tf-idf.py", $output, $return);
-    $results = json_decode(implode("", $output), true);
+// Handle form submission for inserting data
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['submit'])) {
+        $show_table = true;  // Show table only after form submission
+        exec("python util/tf-idf.py", $output, $return);
+        $results = json_decode(implode("", $output), true);
 
-    if ($results && count($results) > 0) {
-        // Prepare the SQL statement using PDO
-        $stmt = $conn->prepare("INSERT INTO tf_idf (teks, score) VALUES (:teks, :score)");
-
-        // Insert data into the database
-        $allInserted = true;  // Assume all data will be inserted successfully
-        foreach ($results as $result) {
-            if (is_array($result) && count($result) == 2) {
-                // Bind parameters to the prepared statement
-                $stmt->bindParam(':teks', $result[0]); // $result[0] is the text
-                $stmt->bindParam(':score', $result[1]); // $result[1] is the score
-
-                // Execute the prepared statement
-                try {
-                    $stmt->execute();
-                } catch (PDOException $e) {
-                    $message_submit = "Error: " . $e->getMessage();
-                    $allInserted = false;
-                    break;
+        if ($results && count($results) > 0) {
+            $stmt = $conn->prepare("INSERT INTO tf_idf (teks, score) VALUES (:teks, :score)");
+            foreach ($results as $result) {
+                if (is_array($result) && count($result) == 2) {
+                    $stmt->bindParam(':teks', $result[0]);
+                    $stmt->bindParam(':score', $result[1]);
+                    try {
+                        $stmt->execute();
+                        // Re-check for the highest score after each insertion
+                        if ($result[1] > $highest_score) {
+                            $highest_score = $result[1];
+                            $highest_score_text = $result[0];
+                            $highest_score_index = $current_index;
+                        }
+                        $current_index++;
+                    } catch (PDOException $e) {
+                        $message_submit = "Error: " . $e->getMessage();
+                        break;
+                    }
+                } else {
+                    $message_submit = "Skipping incomplete or incorrectly formatted item.";
                 }
-            } else {
-                $message_submit = "Skipping incomplete or incorrectly formatted item.";
-                $allInserted = false;
             }
+            $message_submit = empty($message_submit) ? "Data berhasil dibobotkan" : $message_submit;
+        } else {
+            $message_submit = "No data or failed to decode JSON.";
         }
+    }
 
-        if ($allInserted) {
-            $message_submit = "Data berhasil dibobotkan";
+    if (isset($_POST['delete'])) {
+        $sql = "DELETE FROM tf_idf";
+        try {
+            $conn->exec($sql);
+            $message_delete = "Data berhasil dihapus";
+            // Reset highest score variables because all data is deleted
+            $highest_score = 0;
+            $highest_score_text = "";
+            $highest_score_index = 0;
+            $show_table = false;  // Hide table when data is deleted
+        } catch (PDOException $e) {
+            $message_delete = "Error deleting data: " . $e->getMessage();
         }
-    } else {
-        $message_submit = "No data or failed to decode JSON.";
     }
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete'])) {
-    $sql = "DELETE FROM tf_idf";
-    try {
-        $conn->exec($sql);
-        $message_delete = "Data berhasil dihapus";
-    } catch (PDOException $e) {
-        $message_delete = "Error deleting data: " . $e->getMessage();
+// Fetch all entries from the database if the table is to be shown
+if ($show_table) {
+    $query = "SELECT * FROM tf_idf";
+    $stmt = $conn->prepare($query);
+    $stmt->execute();
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Determine the highest scoring entry from the database
+    $current_index = 1;
+    foreach ($results as $result) {
+        if ($result['score'] > $highest_score) {
+            $highest_score = $result['score'];
+            $highest_score_text = $result['teks'];
+            $highest_score_index = $current_index;
+        }
+        $current_index++;
     }
 }
-
-$query = "SELECT * FROM tf_idf";
-$stmt = $conn->prepare($query);
-$stmt->execute();
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
+
+
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -227,61 +252,61 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </ol>
                     </div>
                 </div>
-
-                <div class="row page-titles">
-                </div>
-
                 <div class="container mt-5">
-                    <!-- Card Container -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">Hasil Pembobotan TF-IDF</h4>
-                        </div>
-                        <div class="card-body">
-                            <!-- Form to trigger TF-IDF computation -->
-                            <div class="row">
-                                <div class="col-6">
-                                    <form action="" method="post">
-                                        <button type="submit" class="btn btn-primary w-100" name="submit">Mulai Pembobotan TF-IDF</button>
-                                    </form>
-                                </div>
-                                <div class="col-6">
-                                    <form method="post">
-                                        <button type="submit" class="btn btn-danger w-100" name="delete" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Data</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <?php if (!empty($message_delete)) : ?>
-                            <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
-                        <?php endif; ?>
-                        <?php if (!empty($message_submit)) : ?>
-                            <div class="alert alert-info mt-2"><?php echo $message_submit; ?></div>
-                        <?php endif; ?>
-                        <div class="card-body">
-                            <table class="table table-striped" id="dataTable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Teks</th>
-                                        <th>Scoring</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tableBody">
-                                    <?php $counter = 1; // Initialize a counter 
-                                    ?>
-                                    <?php foreach ($results as $row) : ?>
-                                        <tr>
-                                            <td><?= $counter++; ?></td>
-                                            <td><?= htmlspecialchars($row['teks']) ?></td>
-                                            <td><?= htmlspecialchars($row['score']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                    <!-- Always visible submit button for starting TF-IDF computation -->
+                    <form action="" method="post" style="margin-bottom: 20px;"> <!-- Added margin-bottom -->
+                        <h4>Pembobotan TF-IDF</h4>
+                        <button type="submit" class="btn btn-primary" name="submit">Mulai Pembobotan</button>
+                    </form>
 
-                        </div>
-                    </div>
+                    <!-- Conditional display of card content after data submission -->
+                    <?php if ($show_table) : ?> <!-- Check if data has been submitted and processed -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <!-- Form to trigger data deletion, visible only after submission -->
+                                    <form method="post">
+                                        <button type="submit" class="btn btn-danger float-end" name="delete" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
+                                    </form>
+                                </div>
+                                <?php if (!empty($message_delete)) : ?>
+                                    <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
+                                <?php endif; ?>
+
+                                <table class="table table-striped" id="dataTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Teks</th>
+                                            <th>Scoring</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody">
+                                        <?php $counter = 1; ?>
+                                        <?php foreach ($results as $row) : ?>
+                                            <tr>
+                                                <td><?= $counter++; ?></td>
+                                                <td><?= htmlspecialchars($row['teks']); ?></td>
+                                                <td><?= htmlspecialchars($row['score']); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                                <?php if ($highest_score > 0) : ?>
+                                    <div class="alert alert-success" style="margin-top: 20px;">
+                                        <strong style="font-weight: bold;">Bobot tertinggi :</strong>
+                                        <span style="font-weight: bold;">
+                                            Kalimat No. <?= $highest_score_index; ?>,
+                                            dalam teks "<?= htmlspecialchars($highest_score_text); ?>",
+                                            dengan hasil score: <?= $highest_score; ?>
+                                        </span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+
+                        </div> <!-- End of Card -->
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

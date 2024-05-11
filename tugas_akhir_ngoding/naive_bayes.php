@@ -172,8 +172,6 @@ $conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan kone
                     </div>
                 </div>
 
-                <div class="row page-titles">
-                </div>
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">
