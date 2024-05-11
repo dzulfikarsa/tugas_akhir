@@ -1,3 +1,4 @@
+import json
 import mysql.connector
 import math
 
@@ -27,7 +28,7 @@ def hitung_kemunculan_global(kalimat_list):
     """Menghitung kemunculan global dari setiap kata."""
     global_kemunculan = {}
     total_kata = 0
-    print("\nKata per Kalimat dan Kemunculan Global:")
+    # print("\nKata per Kalimat dan Kemunculan Global:")
     for kalimat in kalimat_list:
         kata_kalimat = kalimat.split()
         total_kata += len(kata_kalimat)
@@ -36,7 +37,7 @@ def hitung_kemunculan_global(kalimat_list):
                 global_kemunculan[kata] += 1
             else:
                 global_kemunculan[kata] = 1
-        print(f"Kalimat: '{kalimat}' -> Kata: {kata_kalimat}")
+        # print(f"Kalimat: '{kalimat}' -> Kata: {kata_kalimat}")
     return global_kemunculan, total_kata, len(kalimat_list)
 
 def hitung_tf(global_kemunculan, total_kata):
@@ -59,11 +60,12 @@ def hitung_bobot_per_kalimat(kalimat_list, bobot_kata, n_frequency):
 def hitung_n_frequency(kata_per_kalimat, minThreshold):
     return [max(minThreshold, jumlah_kata) for jumlah_kata in kata_per_kalimat]
 
-def main():
+def tf_idf():
+    hasil = []
     kalimat = ambil_data()
-    print("\nKalimat Asli dari Database:")
-    for idx, k in enumerate(kalimat, start=1):
-        print(f"Kalimat {idx}: {k}")
+    # print("\nKalimat Asli dari Database:")
+    # for idx, k in enumerate(kalimat, start=1):
+    #     print(f"Kalimat {idx}: {k}")
 
     # Melanjutkan dengan proses selanjutnya tanpa case folding
     global_kemunculan, total_kata, total_kalimat = hitung_kemunculan_global(kalimat)
@@ -75,14 +77,24 @@ def main():
     n_frequency = hitung_n_frequency(kata_per_kalimat, minThreshold)
     bobot_per_kalimat = hitung_bobot_per_kalimat(kalimat, bobot_kata, n_frequency)
 
-    print("\nNilai Bobot untuk Setiap Kalimat:")
-    for idx, bobot in enumerate(bobot_per_kalimat, start=1):
-        print(f"Kalimat {idx}: Bobot = {bobot}")
+    # print("\nNilai Bobot untuk Setiap Kalimat:")
+    # for idx, bobot in enumerate(bobot_per_kalimat, start=1):
+    #     print(f"Bobot = {bobot}")
 
     max_weight = max(bobot_per_kalimat)
     max_index = bobot_per_kalimat.index(max_weight)
-    print(f"\nKalimat dengan Bobot Tertinggi:")
-    print(f"Kalimat {max_index + 1}: Bobot = {max_weight} -> '{kalimat[max_index]}'")
+
+    for teks, bobot in zip(kalimat, bobot_per_kalimat):
+        hasil.append((teks, bobot))
+
+    return json.dumps(hasil)
+    # print(f"\nKalimat dengan Bobot Tertinggi:")
+    # print(f"Kalimat {max_index + 1}: Bobot = {max_weight} -> '{kalimat[max_index]}'")
+
+def main():
+    testing = tf_idf()
+    print(testing)
+
 
 if __name__ == "__main__":
     main()

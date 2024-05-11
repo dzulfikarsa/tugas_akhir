@@ -180,7 +180,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
-                        <li> <a class="waves-effect waves-dark" href="index.php" aria-expanded="false"><i class="fa fa-tachometer"></i><span class="hide-menu">Dashboard</span></a>
+                        <li> <a class="waves-effect waves-dark" href="index.php" aria-expanded="false"><i class="fa fa-tachometer"></i><span class="hide-menu">Beranda</span></a>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="import_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-file-import"></i><span class="hide-menu">Import Data</span></a>
@@ -194,8 +194,15 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <li> <a class="waves-effect waves-dark" href="split_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-scissors"></i><span class="hide-menu">Split Data</span></a>
                         </li>
-                        <li> <a class="waves-effect waves-dark" href="modelling.php" aria-expanded="false">
-                                <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
+                        <li>
+                            <a class="has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa-solid fa-code-compare"></i>
+                                <span class="hide-menu">Modelling</span>
+                            </a>
+                            <ul aria-expanded="false" class="collapse">
+                                <li><a href="tf-idf.php">TF-IDF</a></li>
+                                <li><a href="naive_bayes.php">Naive Bayes Clasifier</a></li>
+                            </ul>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="pengujian.php" aria-expanded="false">
                                 <i class="fa-solid fa-flask-vial"></i><span class="hide-menu">Pengujian</span></a>
@@ -227,7 +234,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="col-md-5 align-self-center">
                         <h3 class="text-themecolor">Import Data</h3>
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                            <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
                             <li class="breadcrumb-item active">Import Data</li>
                         </ol>
                     </div>

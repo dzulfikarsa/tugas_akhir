@@ -1,57 +1,8 @@
 <?php
-require 'koneksi.php'; // Memasukkan file koneksi.php
+require 'koneksi.php';  // Memasukkan definisi kelas Database
+
 $database = new Database(); // Membuat instance dari kelas Database
-$conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi database
-
-$message_submit = "";
-$message_delete = "";
-
-if (isset($_POST['run_preprocessing'])) {
-
-    $sql = "SELECT * FROM data_raw";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    if (count($result) > 0) {
-        $data = array();
-        foreach ($result as $row) {
-            $data[] = $row;
-        }
-
-        // Menyimpan data ke file JSON
-        $filepath = 'C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\data.json';
-        file_put_contents($filepath, json_encode($data));
-        // echo "<p>Data written to file.</p>";
-
-        // Menjalankan script Python
-        $command = "python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\preprocessing.py";
-        $output = shell_exec($command);
-        $message_submit = "Semua data berhasil dipreprocessing";
-        $pythonOutput = $output ? $output : "Python script did not produce any output.";
-    } else {
-        $message_submit = "Error: Data belum ada atau tidak ditemukan.";
-    }
-    // Menutup koneksi database
-}
-
-if (isset($_POST['delete_all'])) {
-    $deleteQuery = "DELETE FROM data_preprocessing";  // Ganti 'data_raw' dengan nama tabel Anda
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->execute();
-    $message_delete = "Semua data berhasil dihapus.";
-}
-
-$query = "SELECT dr.id, dr.title, dp.teks
-          FROM data_raw dr
-          LEFT JOIN data_preprocessing dp ON dr.id = dp.id";
-
-
-$stmt = $conn->prepare($query);
-$stmt->execute();
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+$conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi PDO
 
 ?>
 
@@ -212,10 +163,11 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- ============================================================== -->
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Preprocessing</h3>
+                        <h3 class="text-themecolor">Import Data</h3>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                            <li class="breadcrumb-item active">Preprocessing</li>
+                            <li class="breadcrumb-item"><a href="javascript:void(0)">Modelling</a></li>
+                            <li class="breadcrumb-item active">Naive Bayes Clasifier</li>
                         </ol>
                     </div>
                 </div>
@@ -225,46 +177,44 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">
+                        <div class="card-body">
+                        </div>
+                    </div>
+                    <!-- Card Container -->
+                    <div class="card">
                         <!-- Card Header -->
                         <div class="card-header">
-                            <h4 class="card-title">Preprocessing</h4>
+                            <h4 class="card-title">Hasil Data</h4>
                         </div>
                         <!-- Card Body -->
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-6">
-                                    <form method="post">
-                                        <button type="submit" class="btn btn-primary w-100" name="run_preprocessing">Preprocessing</button>
-                                    </form>
-                                </div>
-                                <div class="col-6">
-                                    <form method="post">
-                                        <button type="submit" class="btn btn-danger w-100" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
-                                    </form>
-                                </div>
-                            </div>
+                            <form method="post">
+                                <button type="submit" class="btn btn-danger" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
+                            </form>
                             <?php if (!empty($message_delete)) : ?>
                                 <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
-                            <?php endif; ?>
-                            <?php if (!empty($message_submit)) : ?>
-                                <div class="alert alert-info mt-2"><?php echo $message_submit; ?></div>
                             <?php endif; ?>
                             <table class="table table-striped" id="dataTable">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Data Asli</th>
-                                        <th>Data Bersih</th>
+                                        <th>Data Asli</th> <!-- Ini sebelumnya adalah 'Author' -->
+                                        <th>Labelling</th> <!-- Ini sebelumnya adalah 'Status' -->
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($results as $row) : ?>
                                         <tr>
                                             <td><?= htmlspecialchars($row['id']) ?></td>
-                                            <td><?= htmlspecialchars($row['title']) ?></td>
-                                            <td><?= htmlspecialchars($row['teks']) ?></td> <!-- Menggunakan kolom 'title' -->
+                                            <td><?= htmlspecialchars($row['title']) ?></td> <!-- Menggunakan kolom 'title' -->
+                                            <td><?= htmlspecialchars($row['status']) ?></td> <!-- Tetap menggunakan kolom 'status' -->
                                         </tr>
                                     <?php endforeach; ?>
+                                    <?php if (empty($results)) : ?>
+                                        <tr>
+                                            <td colspan="3">No data found</td> <!-- Ubah colspan menjadi 3 karena sekarang hanya ada tiga kolom -->
+                                        </tr>
+                                    <?php endif; ?>
                                 </tbody>
                             </table>
 
@@ -324,7 +274,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Page level custom scripts -->
     <script src="datatables/datatables-demo.js"></script>
-
 </body>
 
 </html>

@@ -7,6 +7,9 @@ $conn = $database->connect();
 $trainingCount = 0;
 $testingCount = 0;
 
+$message_submit = "";
+$message_delete = "";
+
 // Fetch current counts from the database
 function fetchCounts($conn)
 {
@@ -44,6 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      FROM data_preprocessing 
                      WHERE id NOT IN (SELECT id_training FROM data_training)");
 
+        $message_submit = "Data berhasil di split";
+
         fetchCounts($conn);  // Update counts after the operation
     } elseif (isset($_POST['delete_all'])) {
         // Perform delete operation
@@ -51,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $conn->exec("TRUNCATE TABLE data_testing");
         $trainingCount = 0;
         $testingCount = 0;
+        $message_delete = "Semua data berhasil dihapus.";
     }
 }
 
@@ -164,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Sidebar navigation-->
                 <nav class="sidebar-nav">
                     <ul id="sidebarnav">
-                        <li> <a class="waves-effect waves-dark" href="index.php" aria-expanded="false"><i class="fa fa-tachometer"></i><span class="hide-menu">Dashboard</span></a>
+                        <li> <a class="waves-effect waves-dark" href="index.php" aria-expanded="false"><i class="fa fa-tachometer"></i><span class="hide-menu">Beranda</span></a>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="import_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-file-import"></i><span class="hide-menu">Import Data</span></a>
@@ -178,8 +184,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <li> <a class="waves-effect waves-dark" href="split_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-scissors"></i><span class="hide-menu">Split Data</span></a>
                         </li>
-                        <li> <a class="waves-effect waves-dark" href="modelling.php" aria-expanded="false">
-                                <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
+                        <li>
+                            <a class="has-arrow waves-effect waves-dark" href="javascript:void(0)" aria-expanded="false">
+                                <i class="fa-solid fa-code-compare"></i>
+                                <span class="hide-menu">Modelling</span>
+                            </a>
+                            <ul aria-expanded="false" class="collapse">
+                                <li><a href="tf-idf.php">TF-IDF</a></li>
+                                <li><a href="naive_bayes.php">Naive Bayes Clasifier</a></li>
+                            </ul>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="pengujian.php" aria-expanded="false">
                                 <i class="fa-solid fa-flask-vial"></i><span class="hide-menu">Pengujian</span></a>
@@ -211,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="col-md-5 align-self-center">
                         <h3 class="text-themecolor">Split Data</h3>
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                            <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
                             <li class="breadcrumb-item active">Split Data</li>
                         </ol>
                     </div>
@@ -219,6 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <div class="row page-titles">
                 </div>
+
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">
@@ -243,8 +257,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php if (!empty($message_delete)) : ?>
                                 <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
                             <?php endif; ?>
-                            <?php if (!empty($message_preprocessing)) : ?>
-                                <div class="alert alert-info mt-2"><?php echo $message_preprocessing; ?></div>
+                            <?php if (!empty($message_submit)) : ?>
+                                <div class="alert alert-info mt-2"><?php echo $message_submit; ?></div>
                             <?php endif; ?>
                             <div class="container mt-5">
                                 <div class="row">
