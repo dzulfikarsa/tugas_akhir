@@ -5,10 +5,7 @@ $conn = $database->connect();
 
 $message_submit = "";
 $message_delete = "";
-$highest_score = 0;
-$highest_score_text = "";
-$highest_score_index = 0;
-$current_index = 1;
+
 $show_table = false;  // Flag to control table visibility
 
 // Handle form submission for inserting data
@@ -18,32 +15,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exec("python util/tf-idf.py", $output, $return);
         $results = json_decode(implode("", $output), true);
 
-        if ($results && count($results) > 0) {
-            $stmt = $conn->prepare("INSERT INTO tf_idf (teks, score) VALUES (:teks, :score)");
-            foreach ($results as $result) {
-                if (is_array($result) && count($result) == 2) {
-                    $stmt->bindParam(':teks', $result[0]);
-                    $stmt->bindParam(':score', $result[1]);
-                    try {
-                        $stmt->execute();
-                        // Re-check for the highest score after each insertion
-                        if ($result[1] > $highest_score) {
-                            $highest_score = $result[1];
-                            $highest_score_text = $result[0];
-                            $highest_score_index = $current_index;
-                        }
-                        $current_index++;
-                    } catch (PDOException $e) {
-                        $message_submit = "Error: " . $e->getMessage();
-                        break;
-                    }
-                } else {
-                    $message_submit = "Skipping incomplete or incorrectly formatted item.";
-                }
+        $stmt = $conn->prepare("INSERT INTO tf_idf (dokumen, teks, score) VALUES (:dokumen, :teks, :score)");
+
+        foreach ($results as $document) {
+            foreach ($document as $item) {
+                $document_id = $item[0];
+                $word = $item[1];
+                $score = $item[2];
+
+                // Mengikat nilai dan mengeksekusi
+                $stmt->bindParam(':dokumen', $document_id);
+                $stmt->bindParam(':teks', $word);
+                $stmt->bindParam(':score', $score);
+                $stmt->execute();
             }
-            $message_submit = empty($message_submit) ? "Data berhasil dibobotkan" : $message_submit;
-        } else {
-            $message_submit = "No data or failed to decode JSON.";
         }
     }
 
@@ -52,33 +37,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         try {
             $conn->exec($sql);
             $message_delete = "Data berhasil dihapus";
-            // Reset highest score variables because all data is deleted
-            $highest_score = 0;
-            $highest_score_text = "";
-            $highest_score_index = 0;
             $show_table = false;  // Hide table when data is deleted
         } catch (PDOException $e) {
             $message_delete = "Error deleting data: " . $e->getMessage();
         }
     }
 }
+$query = "SELECT * FROM tf_idf";
+$stmt = $conn->prepare($query);
+$stmt->execute();
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch all entries from the database if the table is to be shown
-if ($show_table) {
-    $query = "SELECT * FROM tf_idf";
-    $stmt = $conn->prepare($query);
-    $stmt->execute();
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    // Determine the highest scoring entry from the database
-    $current_index = 1;
-    foreach ($results as $result) {
-        if ($result['score'] > $highest_score) {
-            $highest_score = $result['score'];
-            $highest_score_text = $result['teks'];
-            $highest_score_index = $current_index;
-        }
-        $current_index++;
-    }
+if (!empty($results)) {
+    $show_table = true;
 }
 ?>
 
@@ -276,7 +248,7 @@ if ($show_table) {
                                 <table class="table table-striped" id="dataTable">
                                     <thead>
                                         <tr>
-                                            <th>ID</th>
+                                            <th>Dokumen Ke-n</th>
                                             <th>Teks</th>
                                             <th>Scoring</th>
                                         </tr>
@@ -285,23 +257,13 @@ if ($show_table) {
                                         <?php $counter = 1; ?>
                                         <?php foreach ($results as $row) : ?>
                                             <tr>
-                                                <td><?= $counter++; ?></td>
+                                                <td><?= htmlspecialchars($row['dokumen']); ?></td>
                                                 <td><?= htmlspecialchars($row['teks']); ?></td>
                                                 <td><?= htmlspecialchars($row['score']); ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
                                 </table>
-                                <?php if ($highest_score > 0) : ?>
-                                    <div class="alert alert-success" style="margin-top: 20px;">
-                                        <strong style="font-weight: bold;">Bobot tertinggi :</strong>
-                                        <span style="font-weight: bold;">
-                                            Kalimat No. <?= $highest_score_index; ?>,
-                                            dalam teks "<?= htmlspecialchars($highest_score_text); ?>",
-                                            dengan hasil score: <?= $highest_score; ?>
-                                        </span>
-                                    </div>
-                                <?php endif; ?>
                             </div>
 
 

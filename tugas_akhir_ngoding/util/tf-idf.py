@@ -40,14 +40,59 @@ def hitung_kemunculan_global(kalimat_list):
         # print(f"Kalimat: '{kalimat}' -> Kata: {kata_kalimat}")
     return global_kemunculan, total_kata, len(kalimat_list)
 
-def hitung_tf(global_kemunculan, total_kata):
-    return {kata: jumlah / total_kata for kata, jumlah in global_kemunculan.items()}
+def hitung_tf(global_kemunculan, total_kata, data):
+    hasil_tf  = []
+    # return {kata: jumlah / total_kata for kata, jumlah in global_kemunculan.items()}
+    for index, kalimat in enumerate(data):
+        hasil_tf_per_kalimat = []
+        kata_unik = set()
+        kumpulan_kata = kalimat.split()
+        kata_unik.update(kumpulan_kata)
+        for kata in kata_unik:
+            hasil = kalimat.count(kata) / len(kumpulan_kata)
+            hasil_tf_per_kalimat.append((index, kata, hasil))
+        hasil_tf.append(hasil_tf_per_kalimat)
+    return hasil_tf
 
-def hitung_idf(global_kemunculan, total_kalimat):
-    return {kata: math.log2(total_kalimat / jumlah) for kata, jumlah in global_kemunculan.items()}
+def hitung_idf(global_kemunculan, total_kalimat, data):
+    # return {kata: math.log(total_kalimat / jumlah) for kata, jumlah in global_kemunculan.items()}
+    hasil_idf = []
+    for index, kalimat in enumerate(data):
+        hasil_idf_per_kalimat = []
+        kata_unik = set()
+        kumpulan_kata = kalimat.split()
+        kata_unik.update(kumpulan_kata)
+        for kata in kata_unik:
+            hasil = math.log10(total_kalimat / global_kemunculan[kata])
+            hasil_idf_per_kalimat.append((index, kata, hasil))
+        hasil_idf.append(hasil_idf_per_kalimat)
+    return hasil_idf
 
-def hitung_bobot(tf, idf):
-    return {kata: tf[kata] * idf[kata] for kata in tf}
+def hitung_bobot(tf, idf, data):
+    # return {kata: tf[kata] * idf[kata] for kata in tf}
+    hasil_tf_idf = []
+    idf_map = {(item[0], item[1]): item[2] for sublist in idf for item in sublist}
+    for sublist in tf:
+        # Membuat sublist baru untuk hasil tf-idf
+        new_sublist = []
+        
+        for item in sublist:
+            index, kata, tf_score = item
+            
+            # Cari idf score yang sesuai
+            idf_score = idf_map.get((index, kata), 0)
+            
+            # Hitung tf-idf dan simpan dalam sublist baru
+            tf_idf_score = tf_score * idf_score
+            new_sublist.append((index, kata, tf_idf_score))
+        
+        # Tambahkan sublist hasil ke dalam list hasil tf-idf
+        hasil_tf_idf.append(new_sublist)
+    
+    return hasil_tf_idf
+
+        
+        
 
 def hitung_bobot_per_kalimat(kalimat_list, bobot_kata, n_frequency):
     bobot_per_kalimat = []
@@ -63,37 +108,22 @@ def hitung_n_frequency(kata_per_kalimat, minThreshold):
 def tf_idf():
     hasil = []
     kalimat = ambil_data()
-    # print("\nKalimat Asli dari Database:")
-    # for idx, k in enumerate(kalimat, start=1):
-    #     print(f"Kalimat {idx}: {k}")
 
     # Melanjutkan dengan proses selanjutnya tanpa case folding
     global_kemunculan, total_kata, total_kalimat = hitung_kemunculan_global(kalimat)
-    tf = hitung_tf(global_kemunculan, total_kata)
-    idf = hitung_idf(global_kemunculan, total_kalimat)
-    bobot_kata = hitung_bobot(tf, idf)
     kata_per_kalimat = hitung_kata_per_kalimat(kalimat)
-    minThreshold = total_kata / total_kalimat
-    n_frequency = hitung_n_frequency(kata_per_kalimat, minThreshold)
-    bobot_per_kalimat = hitung_bobot_per_kalimat(kalimat, bobot_kata, n_frequency)
 
-    # print("\nNilai Bobot untuk Setiap Kalimat:")
-    # for idx, bobot in enumerate(bobot_per_kalimat, start=1):
-    #     print(f"Bobot = {bobot}")
-
-    max_weight = max(bobot_per_kalimat)
-    max_index = bobot_per_kalimat.index(max_weight)
-
-    for teks, bobot in zip(kalimat, bobot_per_kalimat):
-        hasil.append((teks, bobot))
-
-    return json.dumps(hasil)
-    # print(f"\nKalimat dengan Bobot Tertinggi:")
-    # print(f"Kalimat {max_index + 1}: Bobot = {max_weight} -> '{kalimat[max_index]}'")
+    tf = hitung_tf(global_kemunculan, total_kata, kalimat)
+    # print(type(tf))
+    idf = hitung_idf(global_kemunculan, total_kalimat, kalimat)
+    # print(idf)
+    bobot_kata = hitung_bobot(tf, idf, kalimat)
+    
+    return json.dumps(bobot_kata)
 
 def main():
     testing = tf_idf()
-    print(testing)
+    print(testing)    
 
 
 if __name__ == "__main__":

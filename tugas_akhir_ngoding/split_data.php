@@ -21,6 +21,8 @@ function fetchCounts($conn)
     $testingCount = round($totalCount * 0.2);
 }
 
+fetchCounts($conn);
+
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['splitData'])) {
