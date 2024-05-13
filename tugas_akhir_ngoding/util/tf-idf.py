@@ -15,7 +15,7 @@ def ambil_data():
     """Mengambil data dari database."""
     conn = konek_db()
     cursor = conn.cursor()
-    cursor.execute("SELECT teks FROM data_preprocessing")
+    cursor.execute("SELECT real_text FROM data_training")
     data = [row[0] for row in cursor.fetchall()]
     cursor.close()
     conn.close()
