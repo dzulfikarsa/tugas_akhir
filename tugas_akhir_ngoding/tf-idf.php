@@ -15,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exec("python util/tf-idf.py", $output, $return);
         $results = json_decode(implode("", $output), true);
 
-        $stmt = $conn->prepare("INSERT INTO tf_idf (dokumen, teks, score) VALUES (:dokumen, :teks, :score)");
+        $stmt = $conn->prepare("INSERT INTO tf_idf (id_dokumen, teks, score) VALUES (:id_dokumen, :teks, :score)");
 
         foreach ($results as $document) {
             foreach ($document as $item) {
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $score = $item[2];
 
                 // Mengikat nilai dan mengeksekusi
-                $stmt->bindParam(':dokumen', $document_id);
+                $stmt->bindParam(':id_dokumen', $document_id);
                 $stmt->bindParam(':teks', $word);
                 $stmt->bindParam(':score', $score);
                 $stmt->execute();
@@ -257,7 +257,7 @@ if (!empty($results)) {
                                         <?php $counter = 1; ?>
                                         <?php foreach ($results as $row) : ?>
                                             <tr>
-                                                <td><?= htmlspecialchars($row['dokumen']); ?></td>
+                                                <td><?= htmlspecialchars($row['id_dokumen']); ?></td>
                                                 <td><?= htmlspecialchars($row['teks']); ?></td>
                                                 <td><?= htmlspecialchars($row['score']); ?></td>
                                             </tr>
