@@ -3,68 +3,79 @@ require 'koneksi.php';  // Memasukkan definisi kelas Database
 
 $database = new Database(); // Membuat instance dari kelas Database
 $conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi PDO
-
+$result = "";
 $message_import = "";
-$message_delete = "";
-if (isset($_POST["import"])) {
-    $fileName = $_FILES["file"]["tmp_name"];
 
-    if ($_FILES["file"]["size"] > 0) {
-        $file = fopen($fileName, "r");
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["import"])) {
+    if (isset($_FILES["file"]["error"]) && $_FILES["file"]["error"] == 0) {
+        $fileName = $_FILES["file"]["tmp_name"];
 
-        if ($file !== FALSE) {
-            fgetcsv($file); // Mengabaikan baris pertama (header)
-            while (($column = fgetcsv($file, 10000, ",")) !== FALSE) {
-                if (isset($column[4])) {
-                    $title = $conn->quote($column[4]);
-                    $query = "SELECT 1 FROM data_raw WHERE title = $title";
-                    $check = $conn->query($query);
+        if ($_FILES["file"]["size"] > 0) {
+            $file = fopen($fileName, "r");
 
-                    if ($check->rowCount() == 0) {
-                        if (count($column) >= 17) { // Pastikan semua kolom ada
-                            $id = $conn->quote($column[0]);
-                            $authors = $conn->quote($column[1]);
-                            $status = $conn->quote($column[2]);
-                            $classification = $conn->quote($column[3]);
-                            $content = $conn->quote($column[5]);
-                            $fact = $conn->quote($column[6]);
-                            $references_link = $conn->quote($column[7]);
-                            $source_issue = $conn->quote($column[8]);
-                            $source_link = $conn->quote($column[9]);
-                            $picture1 = $conn->quote($column[10]);
-                            $picture2 = $conn->quote($column[11]);
-                            $tanggal = $conn->quote($column[12]);
-                            $tags = $conn->quote($column[13]);
-                            $conclusion = $conn->quote($column[14]);
-                            $claim_review = $conn->quote($column[15]);
-                            $media = $conn->quote($column[16]);
+            if ($file !== FALSE) {
+                $conn->beginTransaction(); // Start transaction
+                fgetcsv($file); // Skip the header row
+                while (($column = fgetcsv($file, 10000, ",")) !== FALSE) {
+                    if (count($column) >= 17) { // Ensure all columns are present
+                        $title = $conn->quote($column[4]);
+                        $query = "SELECT 1 FROM data_raw WHERE title = $title";
+                        $check = $conn->query($query);
 
-                            $sqlInsert = "INSERT INTO data_raw (id, authors, status, classification, title, content, fact, references_link, source_issue, source_link, picture1, picture2, tanggal, tags, conclusion, claim_review, media) VALUES ($id, $authors, $status, $classification, $title, $content, $fact, $references_link, $source_issue, $source_link, $picture1, $picture2, $tanggal, $tags, $conclusion, $claim_review, $media)";
-                            $result = $conn->exec($sqlInsert);
-
-                            $message_import = $result ? "Data berhasil diimpor." : "Error pada saat import data.";
+                        if ($check->rowCount() == 0) {
+                            $insertValues = array_map(function ($value) use ($conn) {
+                                return $conn->quote($value);
+                            }, $column);
+                            $sqlInsert = "INSERT INTO data_raw (id, authors, status, classification, title, content, fact, references_link, source_issue, source_link, picture1, picture2, tanggal, tags, conclusion, claim_review, media) VALUES (" . implode(",", $insertValues) . ")";
+                            $conn->exec($sqlInsert);
                         } else {
-                            $message_import = "Error: Data CSV tidak lengkap atau tidak valid.";
+                            $message_import .= "Skipped duplicate title: $title<br>";
                         }
                     } else {
-                        $message_import = "Duplikasi judul ditemukan dan diabaikan: $title";
+                        $message_import .= "Error: Data CSV not complete or invalid.<br>";
                     }
                 }
+                $conn->commit(); // Commit transaction
+                fclose($file);
+                if (empty($message_import)) {
+                    $message_import = "Data successfully imported.";
+                }
+            } else {
+                $message_import = "Error: Failed to open CSV file.";
             }
-            fclose($file);
         } else {
-            $message_import = "Error: Gagal membuka file CSV.";
+            $message_import = "Error: CSV file size is empty or too small.";
         }
-    } else {
-        $message_import = "Error: Ukuran file CSV kosong atau terlalu kecil.";
     }
+    header("Location: " . $_SERVER["PHP_SELF"]); // Redirect to avoid resubmission
+    exit();
 }
 
+$importSuccess = false; // Flag to track import success
+
+if ($result) {
+    $message_import = "Data berhasil diimpor.";
+    $importSuccess = true; // Set flag to true on successful import
+} else {
+    $message_import = "Error pada saat import data.";
+}
+
+$deleteSuccess = false; // Flag to track delete success
+$nothingToDelete = false; // Flag if there's nothing to delete
+
 if (isset($_POST['delete_all'])) {
-    $deleteQuery = "DELETE FROM data_raw";  // Ganti 'data_raw' dengan nama tabel Anda
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->execute();
-    $message_delete = "Semua data berhasil dihapus.";
+    $checkData = $conn->query("SELECT COUNT(*) AS count FROM data_raw");
+    $dataCount = $checkData->fetchColumn();
+
+    if ($dataCount > 0) {
+        $deleteQuery = "DELETE FROM data_raw"; // Replace 'data_raw' with your table name
+        $stmt = $conn->prepare($deleteQuery);
+        $stmt->execute();
+        $deleteSuccess = true; // Set flag to true on successful delete
+        $message_delete = "Semua data berhasil dihapus.";
+    } else {
+        $nothingToDelete = true; // Set flag if there's nothing to delete
+    }
 }
 
 // Mengambil data dari database untuk ditampilkan
@@ -104,12 +115,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -248,17 +254,16 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <li>XLSX</li>
                                         <li>CSV</li>
                                     </ul>
-                                    <label for="file" class="form-label"></label>
-                                    <input type="file" class="form-control" id="file" name="file" accept=".csv">
+                                    <form method="POST" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <input type="file" name="file" id="csvFileInput" class="form-control">
+                                        </div>
+                                        <div class="mb-3 text-center">
+                                            <button type="submit" class="btn btn-primary d-block w-100" name="import" id="importButton">Import Data ke Database</button>
+                                        </div>
+                                    </form>
                                 </div>
-                                <div class="mb-3 text-center">
-                                    <button type="submit" class="btn btn-primary d-block w-100" name="import">Import Data ke Database</button>
-                                </div>
-
                             </form>
-                            <?php if (!empty($message_import)) : ?>
-                                <div class="alert alert-info"><?php echo $message_import; ?></div>
-                            <?php endif; ?>
                         </div>
                     </div>
                     <!-- Card Container -->
@@ -269,12 +274,27 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
                         <!-- Card Body -->
                         <div class="card-body">
-                            <form method="post">
-                                <button type="submit" class="btn btn-danger" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
-                            </form>
-                            <?php if (!empty($message_delete)) : ?>
-                                <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
-                            <?php endif; ?>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">Hapus Semua Data</button>
+                            <!-- Modal -->
+                            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Apakah Anda yakin ingin menghapus semua data?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                            <form method="post">
+                                                <button type="submit" class="btn btn-danger" name="delete_all">Hapus Semua Data</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <table class="table table-striped" id="dataTable">
                                 <thead>
                                     <tr>
@@ -298,26 +318,29 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endif; ?>
                                 </tbody>
                             </table>
-
                         </div>
+
+
+
                     </div>
                 </div>
-
             </div>
-            <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
+
         </div>
         <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
+        <!-- End Container fluid  -->
         <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- footer -->
+        <!-- ============================================================== -->
+        <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
+        <!-- ============================================================== -->
+        <!-- End footer -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Page wrapper  -->
+    <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
     <!-- End Wrapper -->
@@ -355,6 +378,72 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Page level custom scripts -->
     <script src="datatables/datatables-demo.js"></script>
+
+    <script>
+        function confirmDelete() {
+            $('#deleteModal').modal('show');
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            <?php if ($importSuccess) : ?>
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Data berhasil diimpor.',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                });
+            <?php endif; ?>
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            // Check for import success
+            <?php if ($importSuccess) : ?>
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Data berhasil diimpor.',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                });
+            <?php endif; ?>
+
+            // Check for delete success
+            <?php if ($deleteSuccess) : ?>
+                Swal.fire({
+                    title: 'Deleted!',
+                    text: 'Semua data berhasil dihapus.',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                });
+            <?php endif; ?>
+
+            // Check if there was nothing to delete
+            <?php if ($nothingToDelete) : ?>
+                Swal.fire({
+                    title: 'Peringatan!',
+                    text: 'Tidak ada data untuk dihapus.',
+                    icon: 'warning',
+                    confirmButtonText: 'Ok'
+                });
+            <?php endif; ?>
+        });
+    </script>
+    <script>
+        document.getElementById('importButton').addEventListener('click', function(e) {
+            var fileInput = document.getElementById('csvFileInput');
+            if (!fileInput.value) {
+                e.preventDefault(); // Stop the form from submitting
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'File tidak ada atau belum dimasukan!'
+                });
+            }
+        });
+    </script>
+
 </body>
 
 </html>

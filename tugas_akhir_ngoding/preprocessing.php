@@ -2,16 +2,21 @@
 require 'koneksi.php'; // Memasukkan file koneksi.php
 $database = new Database(); // Membuat instance dari kelas Database
 $conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi database
+$showAlert = "";
+$result = "";
 
-$message_submit = "";
-$message_delete = "";
+// Function to check if data_preprocessing is empty
+function isTableEmpty($conn)
+{
+    $checkQuery = $conn->query("SELECT COUNT(*) AS total FROM data_raw");
+    $result = $checkQuery->fetch(PDO::FETCH_ASSOC);
+    return $result['total'] == 0;
+}
 
 if (isset($_POST['run_preprocessing'])) {
-
     $sql = "SELECT * FROM data_raw";
     $stmt = $conn->prepare($sql);
     $stmt->execute();
-
     $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (count($result) > 0) {
@@ -20,38 +25,48 @@ if (isset($_POST['run_preprocessing'])) {
             $data[] = $row;
         }
 
-        // Menyimpan data ke file JSON
         $filepath = 'C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\data.json';
         file_put_contents($filepath, json_encode($data));
-        // echo "<p>Data written to file.</p>";
 
-        // Menjalankan script Python
         $command = "python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\preprocessing.py";
         $output = shell_exec($command);
-        $message_submit = "Semua data berhasil dipreprocessing";
         $pythonOutput = $output ? $output : "Python script did not produce any output.";
+        $showAlert = false;
     } else {
-        $message_submit = "Error: Data belum ada atau tidak ditemukan.";
+        $showAlert = true;
     }
-    // Menutup koneksi database
 }
 
-if (isset($_POST['delete_all'])) {
-    $deleteQuery = "DELETE FROM data_preprocessing";  // Ganti 'data_raw' dengan nama tabel Anda
-    $stmt = $conn->prepare($deleteQuery);
-    $stmt->execute();
-    $message_delete = "Semua data berhasil dihapus.";
+$importSuccess = false; // Flag to track import success
+
+if ($result) {
+    $message_import = "Data berhasil diimpor.";
+    $importSuccess = true; // Set flag to true on successful import
+} else {
+    $message_import = "Error pada saat import data.";
 }
+
+$deleteSuccess = false; // Flag to track delete success
+$nothingToDelete = false; // Flag to check if there's nothing to delete
+if (isset($_POST['delete_all'])) {
+    if (!isTableEmpty($conn, "data_preprocessing")) {
+        $deleteQuery = "DELETE FROM data_preprocessing";
+        $stmt = $conn->prepare($deleteQuery);
+        $stmt->execute();
+        $deleteSuccess = true;
+    } else {
+        $nothingToDelete = true;
+    }
+}
+
 
 $query = "SELECT dr.id, dr.title, dp.teks
           FROM data_raw dr
           LEFT JOIN data_preprocessing dp ON dr.id = dp.id";
 
-
 $stmt = $conn->prepare($query);
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 ?>
 
@@ -225,21 +240,33 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <div class="row">
                                 <div class="col-6">
                                     <form method="post">
-                                        <button type="submit" class="btn btn-primary w-100" name="run_preprocessing">Preprocessing</button>
+                                        <button type="submit" class="btn btn-primary w-100" name="run_preprocessing" id="runPreprocessingBtn">Preprocessing</button>
                                     </form>
                                 </div>
                                 <div class="col-6">
-                                    <form method="post">
-                                        <button type="submit" class="btn btn-danger w-100" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Semua Data</button>
-                                    </form>
+                                    <button type="button" class="btn btn-danger w-100" onclick="confirmDelete()">Hapus Semua Data</button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Apakah Anda yakin ingin menghapus semua data?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <form method="post">
+                                                        <button type="submit" class="btn btn-danger" name="delete_all">Hapus Semua Data</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <?php if (!empty($message_delete)) : ?>
-                                <div class="alert alert-info mt-2"><?php echo $message_delete; ?></div>
-                            <?php endif; ?>
-                            <?php if (!empty($message_submit)) : ?>
-                                <div class="alert alert-info mt-2"><?php echo $message_submit; ?></div>
-                            <?php endif; ?>
                             <table class="table table-striped" id="dataTable">
                                 <thead>
                                     <tr>
@@ -258,64 +285,126 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
-
                         </div>
                     </div>
-                </div>
 
+                </div>
+                <!-- ============================================================== -->
+                <!-- End Container fluid  -->
+                <!-- ============================================================== -->
+                <!-- ============================================================== -->
+                <!-- footer -->
+                <!-- ============================================================== -->
+                <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
+                <!-- ============================================================== -->
+                <!-- End footer -->
+                <!-- ============================================================== -->
             </div>
             <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
+            <!-- End Page wrapper  -->
             <!-- ============================================================== -->
         </div>
         <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
+        <!-- End Wrapper -->
         <!-- ============================================================== -->
-    </div>
-    <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- ============================================================== -->
-    <!-- All Jquery -->
-    <!-- ============================================================== -->
-    <script src="assets/node_modules/jquery/jquery.min.js"></script>
-    <!-- Bootstrap popper Core JavaScript -->
-    <script src="assets/node_modules/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- slimscrollbar scrollbar JavaScript -->
-    <script src="assets/js/perfect-scrollbar.jquery.min.js"></script>
-    <!--Wave Effects -->
-    <script src="assets/js/waves.js"></script>
-    <!--Menu sidebar -->
-    <script src="assets/js/sidebarmenu.js"></script>
-    <!--Custom JavaScript -->
-    <script src="assets/js/custom.min.js"></script>
-    <!-- ============================================================== -->
-    <!-- This page plugins -->
-    <!-- ============================================================== -->
-    <!--morris JavaScript -->
-    <script src="assets/node_modules/raphael/raphael-min.js"></script>
-    <script src="assets/node_modules/morrisjs/morris.min.js"></script>
-    <!--c3 JavaScript -->
-    <script src="assets/node_modules/d3/d3.min.js"></script>
-    <script src="assets/node_modules/c3-master/c3.min.js"></script>
-    <!-- Chart JS -->
-    <script src="assets/js/dashboard1.js"></script>
-    <script src="https://kit.fontawesome.com/32266cf13d.js" crossorigin="anonymous"></script>
+        <!-- ============================================================== -->
+        <!-- All Jquery -->
+        <!-- ============================================================== -->
+        <script src="assets/node_modules/jquery/jquery.min.js"></script>
+        <!-- Bootstrap popper Core JavaScript -->
+        <script src="assets/node_modules/bootstrap/js/bootstrap.bundle.min.js"></script>
+        <!-- slimscrollbar scrollbar JavaScript -->
+        <script src="assets/js/perfect-scrollbar.jquery.min.js"></script>
+        <!--Wave Effects -->
+        <script src="assets/js/waves.js"></script>
+        <!--Menu sidebar -->
+        <script src="assets/js/sidebarmenu.js"></script>
+        <!--Custom JavaScript -->
+        <script src="assets/js/custom.min.js"></script>
+        <!-- ============================================================== -->
+        <!-- This page plugins -->
+        <!-- ============================================================== -->
+        <!--morris JavaScript -->
+        <script src="assets/node_modules/raphael/raphael-min.js"></script>
+        <script src="assets/node_modules/morrisjs/morris.min.js"></script>
+        <!--c3 JavaScript -->
+        <script src="assets/node_modules/d3/d3.min.js"></script>
+        <script src="assets/node_modules/c3-master/c3.min.js"></script>
+        <!-- Chart JS -->
+        <script src="assets/js/dashboard1.js"></script>
+        <script src="https://kit.fontawesome.com/32266cf13d.js" crossorigin="anonymous"></script>
 
-    <!-- Page level plugins -->
-    <script src="datatables/jquery.dataTables.min.js"></script>
-    <script src="datatables/dataTables.bootstrap4.min.js"></script>
+        <!-- Page level plugins -->
+        <script src="datatables/jquery.dataTables.min.js"></script>
+        <script src="datatables/dataTables.bootstrap4.min.js"></script>
 
-    <!-- Page level custom scripts -->
-    <script src="datatables/datatables-demo.js"></script>
+        <!-- Page level custom scripts -->
+        <script src="datatables/datatables-demo.js"></script>
+        <script>
+            function confirmDelete() {
+                $('#deleteModal').modal('show');
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            $(document).ready(function() {
+                $('#runPreprocessingBtn').click(function() {
+                    Swal.fire({
+                        title: 'Processing...',
+                        html: 'Preprocessing is currently running. Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        }
+                    });
 
+                    // Assuming the preprocessing doesn't take longer than a set timeout,
+                    // adjust this timer to match a rough estimate of your preprocessing time.
+                    setTimeout(() => {
+                        Swal.close();
+                    }, 5000); // 5000 ms = 5 seconds
+                });
+                // Check for import success
+                <?php if ($importSuccess) : ?>
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Data berhasil dipreprocessing.',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    });
+                <?php endif; ?>
+
+                // Check for delete success
+                <?php if ($deleteSuccess) : ?>
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Semua data berhasil dihapus.',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    });
+                <?php endif; ?>
+
+                // Check if there was nothing to delete
+                <?php if ($nothingToDelete) : ?>
+                    Swal.fire({
+                        title: 'Peringatan!',
+                        text: 'Tidak ada data untuk dihapus.',
+                        icon: 'warning',
+                        confirmButtonText: 'Ok'
+                    });
+                <?php endif; ?>
+
+                // Check if data is empty and display alert
+                <?php if ($showAlert) : ?>
+                    Swal.fire({
+                        title: 'Kosong!',
+                        text: 'Data kosong, tidak dapat melakukan preprocessing data.',
+                        icon: 'warning',
+                        confirmButtonText: 'Ok'
+                    });
+                <?php endif; ?>
+            });
+        </script>
 </body>
 
-</html>
+</html> 

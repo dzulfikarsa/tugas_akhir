@@ -10,58 +10,80 @@ $testingCount = 0;
 $message_submit = "";
 $message_delete = "";
 
-// Fetch current counts from the database
-function fetchCounts($conn)
+function countDataTraining($conn)
 {
-    $totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
-    $totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
-    $totalCount = $totalResult['total'];
-    global $trainingCount, $testingCount;
-    $trainingCount = round($totalCount * 0.8);
-    $testingCount = round($totalCount * 0.2);
+    $query = "SELECT COUNT(*) AS total FROM data_training";
+    $stmt = $conn->query($query);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'];
 }
 
-fetchCounts($conn);
+function countDataTesting($conn)
+{
+    $query = "SELECT COUNT(*) AS total FROM data_testing";
+    $stmt = $conn->query($query);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'];
+}
+
+
+
+// Function to check if data_preprocessing is empty
+function isTableEmpty($conn)
+{
+    $checkQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
+    $result = $checkQuery->fetch(PDO::FETCH_ASSOC);
+    return $result['total'] == 0;
+}
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['splitData'])) {
-        // Calculate training and testing counts
-        $totalQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
-        $totalResult = $totalQuery->fetch(PDO::FETCH_ASSOC);
-        $totalCount = $totalResult['total'];
-        $trainingCount = round($totalCount * 0.8);
-        $testingCount = round($totalCount * 0.2);
+        if (isTableEmpty($conn)) {
+            $alert_message = "Data preprocessing kosong, tidak dapat melakukan split data.";
+        } else {
+            // Calculate training and testing counts
+            $totalCount = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing")->fetch(PDO::FETCH_ASSOC)['total'];
+            $trainingCount = round($totalCount * 0.8);
+            $testingCount = round($totalCount * 0.2);
 
-        // Truncate existing tables
-        $conn->exec("TRUNCATE TABLE data_training");
-        $conn->exec("TRUNCATE TABLE data_testing");
+            // Truncate existing tables
+            $conn->exec("TRUNCATE TABLE data_training");
+            $conn->exec("TRUNCATE TABLE data_testing");
 
-        // Insert data into data_training
-        $conn->exec("INSERT INTO data_training (id_training, real_text, label) 
-                     SELECT id, teks, label 
-                     FROM data_preprocessing 
-                     ORDER BY RAND() LIMIT $trainingCount");
+            // Insert data into data_training
+            $conn->exec("INSERT INTO data_training (id_training, real_text, label) 
+                         SELECT id, teks, label 
+                         FROM data_preprocessing 
+                         ORDER BY RAND() LIMIT $trainingCount");
 
-        // Insert data into data_testing
-        $conn->exec("INSERT INTO data_testing (id_testing, real_text, label) 
-                     SELECT id, teks, label 
-                     FROM data_preprocessing 
-                     WHERE id NOT IN (SELECT id_training FROM data_training)");
+            // Insert data into data_testing
+            $conn->exec("INSERT INTO data_testing (id_testing, real_text, label) 
+                         SELECT id, teks, label 
+                         FROM data_preprocessing 
+                         WHERE id NOT IN (SELECT id_training FROM data_training)");
 
-        $message_submit = "Data berhasil di split";
-
-        fetchCounts($conn);  // Update counts after the operation
+            $message_submit = "Data berhasil di split";
+            $trainingCount = countDataTraining($conn);
+            $testingCount = countDataTesting($conn);
+            // fetchCounts($conn);  // Update counts after the operation
+        }
     } elseif (isset($_POST['delete_all'])) {
-        // Perform delete operation
-        $conn->exec("TRUNCATE TABLE data_training");
-        $conn->exec("TRUNCATE TABLE data_testing");
-        $trainingCount = 0;
-        $testingCount = 0;
-        $message_delete = "Semua data berhasil dihapus.";
+        if (isTableEmpty($conn, "data_training") && isTableEmpty($conn, "data_testing")) {
+            $alert_message = "Tidak ada data latih dan uji untuk dihapus.";
+        } else {
+            // Perform delete operation
+            $conn->exec("TRUNCATE TABLE data_training");
+            $conn->exec("TRUNCATE TABLE data_testing");
+            $trainingCount = countDataTraining($conn);
+            $testingCount = countDataTesting($conn);
+            $message_delete = "Semua data latih dan uji berhasil dihapus.";
+        }
     }
 }
 
+$trainingCount = countDataTraining($conn);
+$testingCount = countDataTesting($conn);
 ?>
 
 
@@ -241,9 +263,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     </form>
                                 </div>
                                 <div class="col-6">
-                                    <form method="post">
-                                        <button type="submit" class="btn btn-danger w-100" name="delete_all" onclick="return confirm('Apakah Anda yakin ingin menghapus semua data?');">Hapus Data Latih dan Uji</button>
-                                    </form>
+                                    <button type="button" class="btn btn-danger w-100" onclick="confirmDelete()">Hapus Semua Data</button>
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Apakah Anda yakin ingin menghapus semua data?
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <form method="post">
+                                                        <button type="submit" class="btn btn-danger" name="delete_all">Hapus Semua Data</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <?php if (!empty($message_delete)) : ?>
@@ -251,6 +291,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php endif; ?>
                             <?php if (!empty($message_submit)) : ?>
                                 <div class="alert alert-info mt-2"><?php echo $message_submit; ?></div>
+                            <?php endif; ?>
+                            <?php if (!empty($alert_message)) : ?>
+                                <div class="alert alert-warning mt-2"><?php echo $alert_message; ?></div>
                             <?php endif; ?>
                             <div class="container mt-5">
                                 <div class="row">
@@ -372,6 +415,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             /* Remove border */
         }
     </style>
+    <script>
+        function confirmDelete() {
+            $('#deleteModal').modal('show');
+        }
+    </script>
 
 
 
