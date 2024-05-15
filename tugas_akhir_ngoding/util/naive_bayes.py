@@ -1,7 +1,6 @@
 import mysql.connector
 from tf_idf import tf_idf
 import json
-import pickle
 
 def konek_db():
     """Membuat koneksi ke database MySQL."""
@@ -22,9 +21,9 @@ def ambil_data():
     conn.close()
     return data
 
-def save_with_pickle(data, filename):
-    with open(filename, 'wb') as f:
-        pickle.dump(data, f)
+def save_to_json(data, filename):
+    with open(filename, 'w') as f:
+        json.dump(data, f, indent=4)
 
 def hitung_kemunculan_global(data):
     global_kemunculan = []
@@ -111,7 +110,8 @@ def naive_bayes():
     probabilitas_prior_class_0, probabilitas_prior_class_1 = hitung_probabilitas_prior(data)
 
     probabilitas_likelihood = hitung_probabilitas_likelihood(hasil_tf_idf, hasil_idf, data)
-    save_with_pickle(probabilitas_likelihood, 'model.pkl')
+    save_to_json(probabilitas_likelihood, 'model.json')
+
     return probabilitas_likelihood
 
 def main():

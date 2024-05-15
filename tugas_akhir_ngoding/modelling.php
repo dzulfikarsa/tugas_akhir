@@ -6,6 +6,13 @@ $show_card = false;
 $message_import = "";
 $probabilities = [];
 
+// Mengecek apakah file model.json ada
+$file_path = 'model.json';  // Sesuaikan path sesuai lokasi file JSON Anda
+if (file_exists($file_path)) {
+    $probabilities = json_decode(file_get_contents($file_path), true);
+    $show_card = true;
+}
+
 // Process the event when the "Mulai" button is clicked
 if (isset($_POST['mulai'])) {
     $show_card = true;  // Tampilkan card
@@ -119,7 +126,7 @@ if (isset($_POST['mulai'])) {
                 <div class="container mt-5">
                     <!-- Always visible submit button for starting TF-IDF computation -->
                     <form action="" method="post" style="margin-bottom: 20px;"> <!-- Added margin-bottom -->
-                        <h4>Pembobotan TF-IDF</h4>
+                        <h4>Modelling</h4>
                         <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
                     </form>
 
