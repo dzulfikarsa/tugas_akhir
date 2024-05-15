@@ -52,16 +52,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn->exec("TRUNCATE TABLE data_testing");
 
             // Insert data into data_training
-            $conn->exec("INSERT INTO data_training (id_training, real_text, label) 
-                         SELECT id, teks, label 
-                         FROM data_preprocessing 
-                         ORDER BY RAND() LIMIT $trainingCount");
+            $conn->exec("INSERT INTO data_training (id_training, real_text, clean_text, label) 
+                SELECT dp.id, dr.title, dp.teks, dp.label 
+                FROM data_preprocessing dp
+                JOIN data_raw dr ON dp.id = dr.id
+                ORDER BY RAND() 
+                LIMIT $trainingCount");
 
             // Insert data into data_testing
-            $conn->exec("INSERT INTO data_testing (id_testing, real_text, label) 
-                         SELECT id, teks, label 
-                         FROM data_preprocessing 
-                         WHERE id NOT IN (SELECT id_training FROM data_training)");
+            $conn->exec("INSERT INTO data_testing (id_testing, real_text, clean_text, label) 
+                SELECT dp.id, dr.title, dp.teks, dp.label 
+                FROM data_preprocessing dp
+                JOIN data_raw dr ON dp.id = dr.id
+                WHERE dp.id NOT IN (SELECT id_training FROM data_training)");
+
 
             $message_submit = "Data berhasil di split";
             $trainingCount = countDataTraining($conn);

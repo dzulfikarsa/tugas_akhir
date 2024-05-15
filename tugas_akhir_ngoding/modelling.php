@@ -4,25 +4,19 @@ require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
 // Set default value for $show_card and initialize $message_import
 $show_card = false;
 $message_import = "";
-$importSuccess = false; // Flag to track import success
+$probabilities = [];
 
 // Process the event when the "Mulai" button is clicked
 if (isset($_POST['mulai'])) {
-    // Set $show_card to true to display the empty card
-    $show_card = true;
-
-    // // Hypothetical code to process import - adjust as per actual import logic
-    // $sql = "SELECT * FROM some_table"; // Example query
-    // $stmt = $conn->prepare($sql);
-    // $result = $stmt->execute();
-
-    // // Check the result of the import operation
-    // if ($result) {
-    //     $message_import = "Data berhasil diimpor.";
-    //     $importSuccess = true; // Set flag to true on successful import
-    // } else {
-    //     $message_import = "Error pada saat import data.";
-    // }
+    $show_card = true;  // Tampilkan card
+    // Menjalankan skrip Python dan menangkap output
+    $output = shell_exec("python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\naive_bayes.py");
+    // Decode output JSON menjadi array PHP
+    if ($output) {
+        $probabilities = json_decode($output, true);
+    } else {
+        $message_import = "Gagal menjalankan skrip Python atau skrip tidak menghasilkan output.";
+    }
 }
 
 ?>
@@ -133,13 +127,33 @@ if (isset($_POST['mulai'])) {
                     <?php if ($show_card) : ?>
                         <div class="card">
                             <div class="card-body">
-                                <div class="row">
-                                    <!-- Content of the empty card goes here -->
-                                    <p>Ini adalah card kosong.</p>
-                                </div>
+                                <?php if (!empty($probabilities)) : ?>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Kata</th>
+                                                <th>Probabilitas Likelihood Hoax (Class 0)</th>
+                                                <th>Probabilitas Likelihood Non-Hoax (Class 1)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($probabilities[0] as $word => $prob) : ?>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($word) ?></td>
+                                                    <td><?= htmlspecialchars($prob) ?></td>
+                                                    <td><?= isset($probabilities[1][$word]) ? htmlspecialchars($probabilities[1][$word]) : 'N/A' ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                <?php else : ?>
+                                    <p><?= $message_import ?></p>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endif; ?>
+
+
                 </div>
             </div>
         </div>
@@ -163,19 +177,6 @@ if (isset($_POST['mulai'])) {
     <script src="datatables/dataTables.bootstrap4.min.js"></script>
     <script src="datatables/datatables-demo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        $(document).ready(function() {
-            // Check for import success
-            <?php if ($importSuccess) : ?>
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Data berhasil dipreprocessing.',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                });
-            <?php endif; ?>
-        });
-    </script>
 
 
 </body>
