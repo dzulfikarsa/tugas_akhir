@@ -92,10 +92,6 @@ def hitung_probabilitas_likelihood(total_tf_idf, total_idf, data):
             hasil = (bobot_kata_tf_idf_per_kelas[label].get(word, 0) + 1) / (total_tf_idf_per_kelas[label] + total_idf_keseluruhan)
             # Add total IDF to the total TF-IDF of the class (Laplace smoothing in the denominator)
             probabilitas_likelihood[label][word] = hasil
-    # print(probabilitas_likelihood)
-    # print(total_tf_idf)
-    # print(total_tf_idf_per_kelas)
-    # print(total_idf_keseluruhan)
     return probabilitas_likelihood
 
 def naive_bayes():
@@ -110,7 +106,7 @@ def naive_bayes():
     probabilitas_prior_class_0, probabilitas_prior_class_1 = hitung_probabilitas_prior(data)
 
     probabilitas_likelihood = hitung_probabilitas_likelihood(hasil_tf_idf, hasil_idf, data)
-    save_to_json(probabilitas_likelihood, 'model.json')
+    save_to_json((probabilitas_prior_class_0, probabilitas_prior_class_1,probabilitas_likelihood), 'model.json')
 
     return probabilitas_likelihood
 

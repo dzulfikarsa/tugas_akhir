@@ -1,32 +1,44 @@
 <?php
 require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
 
-// Set default value for $show_card and initialize $message_import
+// Set default value for $show_card and initialize $message_success
 $show_card = false;
-$message_import = "";
-$probabilities = [];
+$message_failed = "";
+$results = [];
 
 // Mengecek apakah file model.json ada
-$file_path = 'model.json';  // Sesuaikan path sesuai lokasi file JSON Anda
+$file_path = 'prediction_results.json';  // Sesuaikan path sesuai lokasi file JSON Anda
 if (file_exists($file_path)) {
-    $json_data = json_decode(file_get_contents($file_path), true);
-    // Check if the last element of the array (which should contain the probabilities) is an array
-    if (is_array(end($json_data))) {
-        $probabilities = end($json_data);  // Get the last element which contains the probabilities
-        $show_card = true;
-    }
+    $results = json_decode(file_get_contents($file_path), true);
+    $show_card = true;
 }
+
+// // Process the event when the "Mulai" button is clicked
+// if (isset($_POST['mulai'])) {
+//     $show_card = true;  // Tampilkan card
+
+//     // Menjalankan skrip Python
+//     exec("python pengujian.py", $output, $return);
+
+//     // Membaca hasil dari JSON jika skrip berhasil dijalankan
+//     if ($return == 0) { // exec mengembalikan 0 untuk sukses
+//         $json = file_get_contents('prediction_results.json');
+//         $results = json_decode($json, true);
+//     } else {
+//         $message_success = "Gagal menjalankan pengujian.";
+//     }
+// }
 
 // Process the event when the "Mulai" button is clicked
 if (isset($_POST['mulai'])) {
     $show_card = true;  // Tampilkan card
     // Menjalankan skrip Python dan menangkap output
-    $output = shell_exec("python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\naive_bayes.py");
+    $output = shell_exec("python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\pengujian.py");
     // Decode output JSON menjadi array PHP
     if ($output) {
-        $probabilities = json_decode($output, true);
+        $results = json_decode($output, true);
     } else {
-        $message_import = "Gagal menjalankan skrip Python atau skrip tidak menghasilkan output.";
+        $message_failed = "Gagal menjalankan skrip Python atau skrip tidak menghasilkan output.";
     }
 }
 
@@ -120,17 +132,16 @@ if (isset($_POST['mulai'])) {
             <div class="container-fluid">
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Modelling</h3>
+                        <h3 class="text-themecolor">Pengujian</h3>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                            <li class="breadcrumb-item active">Modelling</li>
+                            <li class="breadcrumb-item active">Pengujian</li>
                         </ol>
                     </div>
                 </div>
                 <div class="container mt-5">
-                    <!-- Always visible submit button for starting TF-IDF computation -->
-                    <form action="" method="post" style="margin-bottom: 20px;"> <!-- Added margin-bottom -->
-                        <h4>Modelling</h4>
+                    <form action="" method="post" style="margin-bottom: 20px;">
+                        <h4>Pengujian</h4>
                         <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
                     </form>
 
@@ -138,33 +149,42 @@ if (isset($_POST['mulai'])) {
                     <?php if ($show_card) : ?>
                         <div class="card">
                             <div class="card-body">
-                                <?php if (!empty($probabilities)) : ?>
+                                <?php if (!empty($results)) : ?>
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Kata</th>
-                                                <th>Probabilitas Likelihood Hoax (Class 0)</th>
-                                                <th>Probabilitas Likelihood Non-Hoax (Class 1)</th>
+                                                <th>ID</th>
+                                                <th>Teks</th>
+                                                <th>Label Asli</th>
+                                                <th>Label Prediksi</th>
+                                                <th>Status</th> <!-- New column for status -->
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($probabilities[0] as $word => $prob) : ?>
+                                            <?php foreach ($results as $row) : ?>
                                                 <tr>
-                                                    <td><?= htmlspecialchars($word) ?></td>
-                                                    <td><?= htmlspecialchars($prob) ?></td>
-                                                    <td><?= isset($probabilities[1][$word]) ? htmlspecialchars($probabilities[1][$word]) : 'N/A' ?></td>
+                                                    <td><?= htmlspecialchars($row['id']) ?></td>
+                                                    <td><?= htmlspecialchars($row['real_text']) ?></td>
+                                                    <td><?= htmlspecialchars($row['label']) ?></td>
+                                                    <td><?= htmlspecialchars($row['predicted_label']) ?></td>
+                                                    <!-- Use Bootstrap badge classes for status -->
+                                                    <td>
+                                                        <?php if (strtolower($row['label']) == strtolower($row['predicted_label'])) : ?>
+                                                            <span class="badge bg-success">True</span>
+                                                        <?php else : ?>
+                                                            <span class="badge bg-danger">False</span>
+                                                        <?php endif; ?>
+                                                    </td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
                                 <?php else : ?>
-                                    <p><?= $message_import ?></p>
+                                    <p><?= $message_failed ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
                     <?php endif; ?>
-
-
                 </div>
             </div>
         </div>

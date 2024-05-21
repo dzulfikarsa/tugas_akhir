@@ -172,8 +172,8 @@
                                     <i class="fa-solid fa-scissors"></i><span class="hide-menu">Split Data</span></a>
                             </li>
                             <li> <a class="waves-effect waves-dark" href="modelling.php" aria-expanded="false">
-                                <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
-                             </li>
+                                    <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
+                            </li>
                             <li> <a class="waves-effect waves-dark" href="pengujian.php" aria-expanded="false">
                                     <i class="fa-solid fa-flask-vial"></i><span class="hide-menu">Pengujian</span></a>
                             </li>
@@ -223,7 +223,7 @@
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Clean Text</th>
+                                            <th style="width: 60%;">Clean Text</th>
                                             <th>Label</th>
                                             <th>Action</th>
                                         </tr>

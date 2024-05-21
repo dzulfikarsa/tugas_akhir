@@ -9,68 +9,71 @@ $testingCount = 0;
 
 $message_submit = "";
 $message_delete = "";
+$alert_message = "";
 
 function countDataTraining($conn)
 {
-    $query = "SELECT COUNT(*) AS total FROM data_training";
-    $stmt = $conn->query($query);
+    $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_training");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     return $result['total'];
 }
 
 function countDataTesting($conn)
 {
-    $query = "SELECT COUNT(*) AS total FROM data_testing";
-    $stmt = $conn->query($query);
+    $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_testing");
     $result = $stmt->fetch(PDO::FETCH_ASSOC);
     return $result['total'];
 }
 
-
-
-// Function to check if data_preprocessing is empty
-function isTableEmpty($conn)
+function isTableEmpty($conn, $tableName)
 {
-    $checkQuery = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
-    $result = $checkQuery->fetch(PDO::FETCH_ASSOC);
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM " . $tableName);
+    $stmt->execute();
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
     return $result['total'] == 0;
+}
+
+function splitData($conn)
+{
+    $stmtNonHoax = $conn->prepare("SELECT id, teks, label FROM data_preprocessing WHERE label='non-hoax'");
+    $stmtNonHoax->execute();
+    $resultNonHoax = $stmtNonHoax->fetchAll(PDO::FETCH_ASSOC);
+    $countNonHoax = $stmtNonHoax->rowCount();
+
+    $stmtHoax = $conn->prepare("SELECT id, teks, label FROM data_preprocessing WHERE label='hoax' ORDER BY RAND() LIMIT :countNonHoax");
+    $stmtHoax->bindParam(':countNonHoax', $countNonHoax, PDO::PARAM_INT);
+    $stmtHoax->execute();
+    $resultHoax = $stmtHoax->fetchAll(PDO::FETCH_ASSOC);
+
+    $conn->exec("TRUNCATE TABLE data_training");
+    $conn->exec("TRUNCATE TABLE data_testing");
+
+    $data = array_merge($resultNonHoax, $resultHoax);
+    shuffle($data);
+
+    $splitPoint = round(0.8 * count($data));
+    $stmtTraining = $conn->prepare("INSERT INTO data_training (real_text, clean_text, label) VALUES (?, ?, ?)");
+    $stmtTesting = $conn->prepare("INSERT INTO data_testing (real_text, clean_text, label) VALUES (?, ?, ?)");
+
+    foreach ($data as $index => $row) {
+        if ($index < $splitPoint) {
+            $stmtTraining->execute([$row['teks'], $row['teks'], $row['label']]);
+        } else {
+            $stmtTesting->execute([$row['teks'], $row['teks'], $row['label']]);
+        }
+    }
+    return "Data traning dan testing berhasil di split";
 }
 
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['splitData'])) {
-        if (isTableEmpty($conn)) {
+        if (isTableEmpty($conn, "data_preprocessing")) {
             $alert_message = "Data preprocessing kosong, tidak dapat melakukan split data.";
         } else {
-            // Calculate training and testing counts
-            $totalCount = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing")->fetch(PDO::FETCH_ASSOC)['total'];
-            $trainingCount = round($totalCount * 0.8);
-            $testingCount = round($totalCount * 0.2);
-
-            // Truncate existing tables
-            $conn->exec("TRUNCATE TABLE data_training");
-            $conn->exec("TRUNCATE TABLE data_testing");
-
-            // Insert data into data_training
-            $conn->exec("INSERT INTO data_training (id_training, real_text, clean_text, label) 
-                SELECT dp.id, dr.title, dp.teks, dp.label 
-                FROM data_preprocessing dp
-                JOIN data_raw dr ON dp.id = dr.id
-                ORDER BY RAND() 
-                LIMIT $trainingCount");
-
-            // Insert data into data_testing
-            $conn->exec("INSERT INTO data_testing (id_testing, real_text, clean_text, label) 
-                SELECT dp.id, dr.title, dp.teks, dp.label 
-                FROM data_preprocessing dp
-                JOIN data_raw dr ON dp.id = dr.id
-                WHERE dp.id NOT IN (SELECT id_training FROM data_training)");
-
-
-            $message_submit = "Data berhasil di split";
+            $message_submit = splitData($conn);
             $trainingCount = countDataTraining($conn);
             $testingCount = countDataTesting($conn);
-            // fetchCounts($conn);  // Update counts after the operation
         }
     } elseif (isset($_POST['delete_all'])) {
         if (isTableEmpty($conn, "data_training") && isTableEmpty($conn, "data_testing")) {
@@ -79,19 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Perform delete operation
             $conn->exec("TRUNCATE TABLE data_training");
             $conn->exec("TRUNCATE TABLE data_testing");
-            $trainingCount = countDataTraining($conn);
-            $testingCount = countDataTesting($conn);
+            $trainingCount = 0;
+            $testingCount = 0;
             $message_delete = "Semua data latih dan uji berhasil dihapus.";
         }
     }
 }
 
-$trainingCount = countDataTraining($conn);
-$testingCount = countDataTesting($conn);
+// Refresh counts if not a POST or no form submission
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($message_delete))) {
+    $trainingCount = countDataTraining($conn);
+    $testingCount = countDataTesting($conn);
+}
+
+
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">

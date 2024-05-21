@@ -33,17 +33,13 @@ def replacing_slangword(data, slangword):
     
     return data
 
-def cleansing(data):
-    custom_words = ["[salah]", "hoaks!", "[hoaks]" ,"[klarifikasi]", "cek fakta: tidak benar ", "keliru,", "menyesatkan,", "disinformasi", "benar,", "belum ada bukti,", "(cek fakta debat)", "menyesatkan,", "[disinformasi]", "sebagian benar,"]
+def cleansing(data):    
+
     for item in data:
+
         original_title = item['title'].lower()
-        # Menghapus custom words
-        for word in custom_words:
-            original_title = original_title.replace(word.lower(), '')
-        # Menghapus karakter non-alfabet
         cleaned_title = re.sub(r'[^a-z\s]', '', original_title)
-        # Mengganti judul yang sudah dibersihkan
-        item['title'] = re.sub(r'\s+', ' ', cleaned_title).strip()  # Menghapus spasi berlebih
+        item['title'] = re.sub(r'\s+', ' ', cleaned_title).strip()
     return data
 
 
@@ -52,30 +48,44 @@ def stopword_removal(data):
     stopword_remover = factory.create_stop_word_remover()
 
     for item in data:
-        cleaned_title = stopword_remover.remove(item['title'])
-        item['title'] = cleaned_title
+        texts = item['title'].split()
+        words = []
+        for text in texts:
+            cleaned_text = stopword_remover.remove(text)
+            words.append(cleaned_text)
 
+        item['title'] = ' '.join(words)
+        
     return data
     
-def stemming(data):
+def stemming(texts, exclude_list):
     factory = StemmerFactory()
-    stemmer = factory.create_stemmer()
-    for item in data:
-        item['title'] = stemmer.stem(item['title'])
+    stemmer = factory.create_stemmer()    
 
-    return data
+    for text in texts:
+        stemmed_words = []
+        # Cek apakah kata ada dalam daftar pengecualian
+        words = text['title'].split()
+        for word in words:
+            if word.lower() in exclude_list:
+                stemmed_words.append(word)
+            else:
+                stemmed_words.append(stemmer.stem(word))
+        text['title'] = ' '.join(stemmed_words)
+    return texts
     
-    # return tokenization(stemmed_text)
+    
 
 def preprocessing(data):
+    exclude_list = ["pemilu"]
     cursor.execute("SELECT * FROM slangword")
     slangword = cursor.fetchall()
 
     hasil = case_folding(data)
-    hasil = replacing_slangword(hasil, slangword)
     hasil = cleansing(hasil)
     hasil = stopword_removal(hasil)
-    hasil = stemming(hasil)
+    hasil = replacing_slangword(hasil, slangword)
+    hasil = stemming(hasil, exclude_list)
     return hasil
 
 # def main():
@@ -84,6 +94,7 @@ def preprocessing(data):
 #     hasil = preprocessing(data)
 
 # Print current working directory
+
 print("Current Working Directory:", os.getcwd())
 
 # Menggunakan raw string untuk path

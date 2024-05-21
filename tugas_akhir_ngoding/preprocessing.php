@@ -5,6 +5,7 @@ $conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan kone
 $showAlert = "";
 $result = "";
 
+
 // Function to check if data_preprocessing is empty
 function isTableEmpty($conn)
 {
@@ -13,6 +14,7 @@ function isTableEmpty($conn)
     return $result['total'] == 0;
 }
 
+$importSuccess = false; // Flag to track import success
 if (isset($_POST['run_preprocessing'])) {
     $sql = "SELECT * FROM data_raw";
     $stmt = $conn->prepare($sql);
@@ -32,19 +34,27 @@ if (isset($_POST['run_preprocessing'])) {
         $output = shell_exec($command);
         $pythonOutput = $output ? $output : "Python script did not produce any output.";
         $showAlert = false;
+        if ($output) {
+            $message_import = "Data berhasil diimpor.";
+            $importSuccess = true; // Set flag to true only if Python script runs successfully
+        } else {
+            $message_import = "Error pada saat import data.";
+            $importSuccess = false;
+        }
     } else {
         $showAlert = true;
+        $message_import = "Tidak ada data untuk diimpor.";
+        $importSuccess = false;
     }
 }
 
-$importSuccess = false; // Flag to track import success
 
-if ($result) {
-    $message_import = "Data berhasil diimpor.";
-    $importSuccess = true; // Set flag to true on successful import
-} else {
-    $message_import = "Error pada saat import data.";
-}
+// if ($result) {
+//     $message_import = "Data berhasil diimpor.";
+//     $importSuccess = true; // Set flag to true on successful import
+// } else {
+//     $message_import = "Error pada saat import data.";
+// }
 
 $deleteSuccess = false; // Flag to track delete success
 $nothingToDelete = false; // Flag to check if there's nothing to delete
@@ -357,22 +367,23 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             Swal.showLoading()
                         }
                     });
-
-                    // Assuming the preprocessing doesn't take longer than a set timeout,
-                    // adjust this timer to match a rough estimate of your preprocessing time.
-                    setTimeout(() => {
-                        Swal.close();
-                    }, 5000); // 5000 ms = 5 seconds
                 });
+
                 // Check for import success
-                <?php if ($importSuccess) : ?>
+                // var importSuccess = <?php echo json_encode($importSuccess); ?>;
+                if (importSuccess) {
                     Swal.fire({
                         title: 'Success!',
                         text: 'Data berhasil dipreprocessing.',
                         icon: 'success',
                         confirmButtonText: 'Ok'
+                    }).then((result) => {
+                        // Reload the page or perform another action after clicking 'OK'
+                        if (result.value) {
+                            window.location.reload();
+                        }
                     });
-                <?php endif; ?>
+                }
 
                 // Check for delete success
                 <?php if ($deleteSuccess) : ?>
@@ -407,4 +418,4 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </script>
 </body>
 
-</html> 
+</html>

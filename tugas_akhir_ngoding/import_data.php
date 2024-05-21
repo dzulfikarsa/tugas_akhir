@@ -247,13 +247,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="card-body">
                             <form class="form-horizontal" action="" method="post" name="uploadCsv" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <p>Anda bisa melakukan import data dengan format</p>
-                                    <ul>
-                                        <li>XLS</li>
-                                        <li>XLX</li>
-                                        <li>XLSX</li>
-                                        <li>CSV</li>
-                                    </ul>
+                                    <p>Anda hanya bisa melakukan import data dengan format .CSV</p>
                                     <form method="POST" enctype="multipart/form-data">
                                         <div class="mb-3">
                                             <input type="file" name="file" id="csvFileInput" class="form-control">
