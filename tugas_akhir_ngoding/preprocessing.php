@@ -241,10 +241,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">
-                        <!-- Card Header -->
-                        <div class="card-header">
-                            <h4 class="card-title">Preprocessing</h4>
-                        </div>
                         <!-- Card Body -->
                         <div class="card-body">
                             <div class="row">

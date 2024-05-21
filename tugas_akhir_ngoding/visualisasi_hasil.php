@@ -1,46 +1,6 @@
 <?php
 require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
 
-// Set default value for $show_card and initialize $message_success
-$show_card = false;
-$message_failed = "";
-$results = [];
-
-// Mengecek apakah file model.json ada
-$file_path = 'prediction_results.json';  // Sesuaikan path sesuai lokasi file JSON Anda
-if (file_exists($file_path)) {
-    $results = json_decode(file_get_contents($file_path), true);
-    $show_card = true;
-}
-
-// // Process the event when the "Mulai" button is clicked
-// if (isset($_POST['mulai'])) {
-//     $show_card = true;  // Tampilkan card
-
-//     // Menjalankan skrip Python
-//     exec("python pengujian.py", $output, $return);
-
-//     // Membaca hasil dari JSON jika skrip berhasil dijalankan
-//     if ($return == 0) { // exec mengembalikan 0 untuk sukses
-//         $json = file_get_contents('prediction_results.json');
-//         $results = json_decode($json, true);
-//     } else {
-//         $message_success = "Gagal menjalankan pengujian.";
-//     }
-// }
-
-// Process the event when the "Mulai" button is clicked
-if (isset($_POST['mulai'])) {
-    $show_card = true;  // Tampilkan card
-    // Menjalankan skrip Python dan menangkap output
-    $output = shell_exec("python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\pengujian.py");
-    // Decode output JSON menjadi array PHP
-    if ($output) {
-        $results = json_decode($output, true);
-    } else {
-        $message_failed = "Gagal menjalankan skrip Python atau skrip tidak menghasilkan output.";
-    }
-}
 
 ?>
 
@@ -64,6 +24,64 @@ if (isset($_POST['mulai'])) {
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
+    <style>
+        .card-custom {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+        }
+
+        .card-header-custom {
+            background-color: transparent;
+            border-bottom: none;
+            color: #333;
+        }
+
+        .card-body-custom {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .card-icon {
+            font-size: 24px;
+        }
+
+        .stats {
+            font-family: 'Cambria', 'Times New Roman', serif;
+            font-size: 18px;
+            color: #333;
+            line-height: 2;
+        }
+
+        .formula {
+            margin-bottom: 20px;
+            background: #f9f9f9;
+            border-left: 5px solid #007BFF;
+            padding: 10px;
+        }
+
+        .formula em {
+            font-size: 20px;
+            font-style: italic;
+        }
+
+        .calculation,
+        .inline-block {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .breakdown,
+        .result {
+            font-size: 16px;
+            margin-left: 5px;
+        }
+
+        .inline-block {
+            vertical-align: middle;
+        }
+    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -129,65 +147,111 @@ if (isset($_POST['mulai'])) {
         </aside>
 
         <div class="page-wrapper">
-            <div class="container-fluid">
+            <div class="container-fluid row">
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Pengujian</h3>
+                        <h3 class="text-themecolor">Visualisasi Hasil</h3>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                            <li class="breadcrumb-item active">Pengujian</li>
+                            <li class="breadcrumb-item active">Visualisasi Hasil</li>
                         </ol>
                     </div>
                 </div>
                 <div class="container mt-5">
-                    <form action="" method="post" style="margin-bottom: 20px;">
-                        <h4>Pengujian</h4>
-                        <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
-                    </form>
+                    <div class="card">
+                        <div class="card-body row">
+                            <div class="col-6">
+                                <table class="table table-bordered text-center">
+                                    <tr>
+                                        <td colspan="2" rowspan="2" class="align-middle">
+                                            Data Training = 6756
+                                            <br>
+                                            Data Testing = 1689
+                                        </td>
+                                        <td colspan="2" class="align-middle">Kelas Aktual</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Hoax</td>
+                                        <td>Non-Hoax</td>
+                                    </tr>
+                                    <tr>
+                                        <td rowspan="2" class="align-middle">Kelas Prediksi</td>
+                                        <td>Hoax</td>
+                                        <td>TP = <span id="tp"></span></td>
+                                        <td>FN = <span id="fn"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Non-Hoax</td>
+                                        <td>FP = <span id="fp"></span></td>
+                                        <td>TN = <span id="tn"></span></td>
+                                    </tr>
+                                </table>
+                                <!-- Displaying the formulas and results -->
+                                <div class="stats">
+                                    <p class="formula">
+                                        <em>Accuracy = </em>
+                                        <span class="calculation" id="accuracy_formula"></span>
+                                        <br>
+                                        <span class="inline-block" id="accuracy_details">
+                                            <em>Accuracy = </em>
+                                            <span class="breakdown" id="accuracy_breakdown"></span>
+                                            <span class="result" id="accuracy_result"></span>
+                                        </span>
+                                    </p>
+                                    <p class="formula">
+                                        <em>Precision = </em>
+                                        <span class="calculation" id="precision_formula"></span>
+                                        <br>
+                                        <span class="inline-block" id="precision_details">
+                                            <em>Precision = </em>
+                                            <span class="breakdown" id="precision_breakdown"></span>
+                                            <span class="result" id="precision_result"></span>
+                                        </span>
+                                    </p>
+                                    <p class="formula">
+                                        <em>Recall = </em>
+                                        <span class="calculation" id="recall_formula"></span>
+                                        <br>
+                                        <span class="inline-block" id="recall_details">
+                                            <em>Recall = </em>
+                                            <span class="breakdown" id="recall_breakdown"></span>
+                                            <span class="result" id="recall_result"></span>
+                                        </span>
+                                    </p>
+                                </div>
 
-                    <!-- Conditional display of card content after data submission -->
-                    <?php if ($show_card) : ?>
-                        <div class="card">
-                            <div class="card-body">
-                                <?php if (!empty($results)) : ?>
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>Teks</th>
-                                                <th>Label Asli</th>
-                                                <th>Label Prediksi</th>
-                                                <th>Status</th> <!-- New column for status -->
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($results as $row) : ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($row['id']) ?></td>
-                                                    <td><?= htmlspecialchars($row['real_text']) ?></td>
-                                                    <td><?= htmlspecialchars($row['label']) ?></td>
-                                                    <td><?= htmlspecialchars($row['predicted_label']) ?></td>
-                                                    <!-- Use Bootstrap badge classes for status -->
-                                                    <td>
-                                                        <?php if (strtolower($row['label']) == strtolower($row['predicted_label'])) : ?>
-                                                            <span class="badge bg-success">True</span>
-                                                        <?php else : ?>
-                                                            <span class="badge bg-danger">False</span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                <?php else : ?>
-                                    <p><?= $message_failed ?></p>
-                                <?php endif; ?>
+
+                            </div>
+                            <div class="col-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card card-custom shadow-sm rounded">
+                                            <div class="card-body-custom">
+                                                <h6 class="card-title card-header-custom m-0">Total Prediksi Hoax</h6>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="card-body-custom m-0">1180</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card card-custom shadow-sm rounded">
+                                            <div class="card-body-custom">
+                                                <h6 class="card-title card-header-custom m-0">Total Prediksi Non-Hoax</h6>
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <p class="card-body-custom m-0">509</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
     </div>
     <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
     </div>
@@ -208,8 +272,49 @@ if (isset($_POST['mulai'])) {
     <script src="datatables/dataTables.bootstrap4.min.js"></script>
     <script src="datatables/datatables-demo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        function loadData() {
+            fetch('confusion_matrix.json')
+                .then(response => response.json())
+                .then(data => {
+                    const TP = data["TP (True Positive)"];
+                    const TN = data["TN (True Negative)"];
+                    const FP = data["FP (False Positive)"];
+                    const FN = data["FN (False Negative)"];
 
+                    document.getElementById('tp').innerHTML = TP;
+                    document.getElementById('fn').innerHTML = FN;
+                    document.getElementById('fp').innerHTML = FP;
+                    document.getElementById('tn').innerHTML = TN;
 
+                    // Calculate metrics
+                    const accuracy = ((TP + TN) / (TP + TN + FP + FN)).toFixed(3);
+                    const precision = (TP / (TP + FP)).toFixed(3);
+                    const recall = (TP / (TP + FN)).toFixed(3);
+
+                    // Set formula LaTeX
+                    document.getElementById('accuracy_formula').innerText = `\\(\\frac{TP + TN}{TP + TN + FP + FN}\\)`;
+                    document.getElementById('accuracy_breakdown').innerText = `\\(\\frac{${TP} + ${TN}}{${TP} + ${TN} + ${FP} + ${FN}}\\)`;
+                    document.getElementById('accuracy_result').innerHTML = `= ${accuracy}`;
+
+                    document.getElementById('precision_formula').innerText = `\\(\\frac{TP}{TP + FP}\\)`;
+                    document.getElementById('precision_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FP}}\\)`;
+                    document.getElementById('precision_result').innerHTML = `= ${precision}`;
+
+                    document.getElementById('recall_formula').innerText = `\\(\\frac{TP}{TP + FN}\\)`;
+                    document.getElementById('recall_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FN}}\\)`;
+                    document.getElementById('recall_result').innerHTML = `= ${recall}`;
+
+                    // Ensure MathJax updates the display
+                    MathJax.typesetPromise();
+                })
+                .catch(error => console.error('Error loading the data:', error));
+        }
+
+        window.onload = loadData;
+    </script>
 </body>
 
 </html>

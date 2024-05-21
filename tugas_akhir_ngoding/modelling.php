@@ -130,7 +130,6 @@ if (isset($_POST['mulai'])) {
                 <div class="container mt-5">
                     <!-- Always visible submit button for starting TF-IDF computation -->
                     <form action="" method="post" style="margin-bottom: 20px;"> <!-- Added margin-bottom -->
-                        <h4>Modelling</h4>
                         <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
                     </form>
 

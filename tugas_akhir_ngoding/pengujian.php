@@ -125,7 +125,6 @@ if (isset($_POST['mulai'])) {
                 </div>
                 <div class="container mt-5">
                     <form action="" method="post" style="margin-bottom: 20px;">
-                        <h4>Pengujian</h4>
                         <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
                     </form>
 

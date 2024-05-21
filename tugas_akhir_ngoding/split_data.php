@@ -259,10 +259,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                 <div class="container mt-5">
                     <!-- Card Container -->
                     <div class="card">
-                        <!-- Card Header -->
-                        <div class="card-header">
-                            <h4 class="card-title">Split Data</h4>
-                        </div>
                         <!-- Card Body -->
                         <div class="card-body">
                             <div class="row">
