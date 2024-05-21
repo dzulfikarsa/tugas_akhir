@@ -13,6 +13,22 @@ if (file_exists($file_path)) {
     $show_card = true;
 }
 
+// // Process the event when the "Mulai" button is clicked
+// if (isset($_POST['mulai'])) {
+//     $show_card = true;  // Tampilkan card
+
+//     // Menjalankan skrip Python
+//     exec("python pengujian.py", $output, $return);
+
+//     // Membaca hasil dari JSON jika skrip berhasil dijalankan
+//     if ($return == 0) { // exec mengembalikan 0 untuk sukses
+//         $json = file_get_contents('prediction_results.json');
+//         $results = json_decode($json, true);
+//     } else {
+//         $message_success = "Gagal menjalankan pengujian.";
+//     }
+// }
+
 // Process the event when the "Mulai" button is clicked
 if (isset($_POST['mulai'])) {
     $show_card = true;  // Tampilkan card
