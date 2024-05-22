@@ -1,6 +1,40 @@
 <?php
-require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
+require 'koneksi.php'; // Pastikan 'koneksi.php' menciptakan koneksi PDO
+$database = new Database();
+$conn = $database->connect();
 
+// Mengambil jumlah total data training dengan PDO
+$queryTraining = "SELECT COUNT(*) as totalTraining FROM data_training";
+$stmtTraining = $conn->prepare($queryTraining);
+$stmtTraining->execute();
+$rowTraining = $stmtTraining->fetch(PDO::FETCH_ASSOC);
+$totalTraining = $rowTraining['totalTraining'];
+
+// Mengambil jumlah total data testing dengan PDO
+$queryTesting = "SELECT COUNT(*) as totalTesting FROM data_testing";
+$stmtTesting = $conn->prepare($queryTesting);
+$stmtTesting->execute();
+$rowTesting = $stmtTesting->fetch(PDO::FETCH_ASSOC);
+$totalTesting = $rowTesting['totalTesting'];
+
+// Load JSON file
+$jsonData = file_get_contents('prediction_results.json');
+// Decode JSON data into PHP array
+$data = json_decode($jsonData, true);
+
+// Initialize counters
+$totalHoax = 0;
+$totalNonHoax = 0;
+
+// Iterate through each item and count predictions
+foreach ($data as $item) {
+    $predictedLabel = strtolower($item['predicted_label']); // Convert label to lowercase
+    if ($predictedLabel === 'hoax') {
+        $totalHoax++;
+    } elseif ($predictedLabel === 'non-hoax') {
+        $totalNonHoax++;
+    }
+}
 
 ?>
 
@@ -161,29 +195,29 @@ require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
                     <div class="card">
                         <div class="card-body row">
                             <div class="col-6">
-                                <table class="table table-bordered text-center">
+                                <table class="table table-bordered text-center border border-dark">
                                     <tr>
-                                        <td colspan="2" rowspan="2" class="align-middle">
-                                            Data Training = 6756
+                                        <td colspan="2" rowspan="2" class="align-middle fw-bold border border-dark">
+                                            Data Training = <?php echo $totalTraining; ?>
                                             <br>
-                                            Data Testing = 1689
+                                            Data Testing = <?php echo $totalTesting; ?>
                                         </td>
-                                        <td colspan="2" class="align-middle">Kelas Aktual</td>
+                                        <td colspan="2" class="align-middle fw-bold border border-dark">Kelas Aktual</td>
                                     </tr>
                                     <tr>
-                                        <td>Hoax</td>
-                                        <td>Non-Hoax</td>
+                                        <td class="fw-bold border border-dark">Hoax</td>
+                                        <td class="fw-bold border border-dark">Non-Hoax</td>
                                     </tr>
                                     <tr>
-                                        <td rowspan="2" class="align-middle">Kelas Prediksi</td>
-                                        <td>Hoax</td>
-                                        <td>TP = <span id="tp"></span></td>
-                                        <td>FN = <span id="fn"></span></td>
+                                        <td rowspan="2" class="align-middle fw-bold border border-dark">Kelas Prediksi</td>
+                                        <td class="fw-bold border border-dark">Hoax</td>
+                                        <td class="fw-bold border border-dark">TP = <span id="tp"></span></td>
+                                        <td class="fw-bold border border-dark">FN = <span id="fn"></span></td>
                                     </tr>
                                     <tr>
-                                        <td>Non-Hoax</td>
-                                        <td>FP = <span id="fp"></span></td>
-                                        <td>TN = <span id="tn"></span></td>
+                                        <td class="fw-bold border border-dark">Non-Hoax</td>
+                                        <td class="fw-bold border border-dark">FP = <span id="fp"></span></td>
+                                        <td class="fw-bold border border-dark">TN = <span id="tn"></span></td>
                                     </tr>
                                 </table>
                                 <!-- Displaying the formulas and results -->
@@ -225,27 +259,34 @@ require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
                             <div class="col-6">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="card card-custom shadow-sm rounded">
-                                            <div class="card-body-custom">
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-2">
                                                 <h6 class="card-title card-header-custom m-0">Total Prediksi Hoax</h6>
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <p class="card-body-custom m-0">1180</p>
+                                                    <p class="card-body-custom m-0"><?php echo $totalHoax; ?></p>
+                                                    <i class="fa-solid fa-exclamation-triangle " style="color: #FFD43B;"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="card card-custom shadow-sm rounded">
-                                            <div class="card-body-custom">
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-2">
                                                 <h6 class="card-title card-header-custom m-0">Total Prediksi Non-Hoax</h6>
                                                 <div class="d-flex align-items-center justify-content-between">
-                                                    <p class="card-body-custom m-0">509</p>
+                                                    <p class="card-body-custom m-0"><?php echo $totalNonHoax; ?></p>
+                                                    <i class="fa-solid fa-check-circle" style="color:#007BFF;"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div>
+                                    <canvas id="predictionChart"></canvas>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
@@ -271,6 +312,7 @@ require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
     <script src="datatables/jquery.dataTables.min.js"></script>
     <script src="datatables/dataTables.bootstrap4.min.js"></script>
     <script src="datatables/datatables-demo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -312,6 +354,51 @@ require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
                 })
                 .catch(error => console.error('Error loading the data:', error));
         }
+
+        function renderPredictionChart(totalHoax, totalNonHoax) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            const predictionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hoax', 'Non-Hoax'],
+                    datasets: [{
+                        label: 'Hasil Prediksi',
+                        data: [totalHoax, totalNonHoax],
+                        backgroundColor: [
+
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            onClick: (e) => e.stopPropagation(),
+                            labels: {
+                                usePointStyle: false, // This disables the point style, i.e., the symbol
+                                boxWidth: 0 // Set the width of the colored box to 0 to hide it
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Call this function with the actual data
+        renderPredictionChart(<?php echo $totalHoax; ?>, <?php echo $totalNonHoax; ?>);
 
         window.onload = loadData;
     </script>

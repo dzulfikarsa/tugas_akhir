@@ -127,12 +127,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -300,13 +294,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                             <?php if (!empty($alert_message)) : ?>
                                 <div class="alert alert-warning mt-2"><?php echo $alert_message; ?></div>
                             <?php endif; ?>
-                            <div class="container mt-6">
+                            <div class="container mt-5">
                                 <div class="row">
                                     <!-- Training Data Card -->
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
                                             <div class="card-body-custom p-3">
-                                                <h4 class="card-title card-header-custom m-0">Jumlah Data Training</h4>
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Training</h6>
                                                 <h2 class="display-4"><?= $trainingCount ?></h2>
                                                 <div class="card-body-icon">
                                                     <i class="fa-solid fa-dumbbell"></i>
@@ -314,10 +308,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                                             </div>
                                         </div>
                                     </div>
+                                    <!-- Testing Data Card -->
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
                                             <div class="card-body-custom p-3">
-                                                <h4 class="card-title card-header-custom m-0">Jumlah Data Testing</h4>
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Testing</h6>
                                                 <h2 class="display-4"><?= $testingCount ?></h2>
                                                 <div class="card-body-icon">
                                                     <i class="fa-solid fa-vial"></i>
@@ -326,8 +321,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Testing Data Card -->
-
                             </div>
                         </div>
                     </div>
