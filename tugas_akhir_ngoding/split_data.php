@@ -261,7 +261,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                     <div class="card">
                         <!-- Card Body -->
                         <div class="card-body">
-                            <div class="row">
+                            <div class="row mb-5">
                                 <div class="col-6">
                                     <form action="" method="post">
                                         <button type="submit" class="btn btn-primary w-100" name="splitData">Split Data</button>
@@ -300,57 +300,55 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                             <?php if (!empty($alert_message)) : ?>
                                 <div class="alert alert-warning mt-2"><?php echo $alert_message; ?></div>
                             <?php endif; ?>
-                            <div class="container mt-5">
+                            <div class="container mt-6">
                                 <div class="row">
                                     <!-- Training Data Card -->
                                     <div class="col-md-6">
-                                        <div class="card text-center">
-                                            <div class="card-body card-horizontal">
-                                                <div class="mr-4">
-                                                    <h4 class="card-title">Jumlah Data Latih</h4>
-                                                    <h2 class="display-4"><?= $trainingCount ?></h2>
-                                                    <div class="card-body-icon">
-                                                        <i class="fa-solid fa-dumbbell"></i>
-                                                    </div>
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-3">
+                                                <h4 class="card-title card-header-custom m-0">Jumlah Data Training</h4>
+                                                <h2 class="display-4"><?= $trainingCount ?></h2>
+                                                <div class="card-body-icon">
+                                                    <i class="fa-solid fa-dumbbell"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Testing Data Card -->
                                     <div class="col-md-6">
-                                        <div class="card">
-                                            <div class="card-body card-horizontal">
-                                                <div class="mr-4">
-                                                    <h4 class="card-title">Jumlah Data Uji</h4>
-                                                    <h2 class="display-4"><?= $testingCount ?></h2>
-                                                    <div class="card-body-icon">
-                                                        <i class="fas fa-vial"></i>
-                                                    </div>
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-3">
+                                                <h4 class="card-title card-header-custom m-0">Jumlah Data Testing</h4>
+                                                <h2 class="display-4"><?= $testingCount ?></h2>
+                                                <div class="card-body-icon">
+                                                    <i class="fa-solid fa-vial"></i>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <!-- Testing Data Card -->
+
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-            <!-- ============================================================== -->
-            <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
-            <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
+
         </div>
         <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
+        <!-- End Container fluid  -->
         <!-- ============================================================== -->
+        <!-- ============================================================== -->
+        <!-- footer -->
+        <!-- ============================================================== -->
+        <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
+        <!-- ============================================================== -->
+        <!-- End footer -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Page wrapper  -->
+    <!-- ============================================================== -->
     </div>
     <!-- ============================================================== -->
     <!-- End Wrapper -->
