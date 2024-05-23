@@ -1,3 +1,31 @@
+<?php
+include 'koneksi.php'; // Pastikan path ke file db.php benar
+$database = new Database();
+$conn = $database->connect();
+
+// Mengambil jumlah total data
+$sqlTotal = "SELECT COUNT(*) AS total FROM data_raw";
+$stmt = $conn->prepare($sqlTotal);
+$stmt->execute();
+$totalData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Mengambil jumlah data training
+$sqlTraining = "SELECT COUNT(*) AS total FROM data_training";
+$stmt = $conn->prepare($sqlTraining);
+$stmt->execute();
+$totalTraining = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Mengambil jumlah data testing
+$sqlTesting = "SELECT COUNT(*) AS total FROM data_testing";
+$stmt = $conn->prepare($sqlTesting);
+$stmt->execute();
+$totalTesting = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$conn = null;  // Tutup koneksi database
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -26,12 +54,20 @@
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+    <style>
+        .card-text {
+            font-size: 36px;
+        }
+
+        .card-body-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 24px;
+            /* Normal icon size */
+        }
+    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -150,6 +186,42 @@
                         <h3 class="text-themecolor">Dashboard</h3>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card rounded shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data</h5>
+                                <p class="card-text"><?php echo $totalData['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card rounded shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Training</h5>
+                                <p class="card-text"><?php echo $totalTraining['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-dumbbell"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card rounded shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Testing</h5>
+                                <p class="card-text"><?php echo $totalTesting['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-vial"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <!-- ============================================================== -->
             <!-- End Container fluid  -->

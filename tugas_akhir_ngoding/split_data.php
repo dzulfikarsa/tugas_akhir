@@ -127,6 +127,31 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
+    <style>
+        .card-horizontal {
+            display: flex;
+            flex: 1 1 auto;
+            position: relative;
+            padding-right: 50px;
+            /* Padding to ensure text does not overlap icon */
+            border-radius: 0.25rem;
+            /* Rounded corners matching Bootstrap's style */
+        }
+
+        .card-body-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 24px;
+            /* Normal icon size */
+        }
+
+        .bold-text {
+            font-weight: bold;
+            /* Bold font for the numbers */
+        }
+    </style>    
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -379,38 +404,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
 
     <!-- Page level custom scripts -->
     <script src="datatables/datatables-demo.js"></script>
-    <style>
-        .card-horizontal {
-            display: flex;
-            flex: 1 1 auto;
-            position: relative;
-            padding-right: 50px;
-            /* Padding to ensure text does not overlap icon */
-            border-radius: 0.25rem;
-            /* Rounded corners matching Bootstrap's style */
-        }
-
-        .card-body-icon {
-            position: absolute;
-            top: 50%;
-            right: 15px;
-            transform: translateY(-50%);
-            font-size: 24px;
-            /* Normal icon size */
-        }
-
-        .bold-text {
-            font-weight: bold;
-            /* Bold font for the numbers */
-        }
-
-        .card {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            /* Subtle shadow */
-            border: none;
-            /* Remove border */
-        }
-    </style>
     <script>
         function confirmDelete() {
             $('#deleteModal').modal('show');

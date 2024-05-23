@@ -74,7 +74,6 @@ foreach ($data as $item) {
 
         .card-body-custom {
             font-size: 36px;
-            font-weight: bold;
         }
 
         .card-icon {
@@ -114,6 +113,13 @@ foreach ($data as $item) {
 
         .inline-block {
             vertical-align: middle;
+        }
+
+        .custom-spacing {
+            padding-left: 50px;
+            /* Jarak kiri */
+            padding-right: 50px;
+            /* Jarak kanan */
         }
     </style>
 </head>
@@ -194,7 +200,7 @@ foreach ($data as $item) {
                 <div class="container mt-5">
                     <div class="card">
                         <div class="card-body row">
-                            <div class="col-6">
+                            <div class="col-6 custom-spacing">
                                 <table class="table table-bordered text-center border border-dark">
                                     <tr>
                                         <td colspan="2" rowspan="2" class="align-middle fw-bold border border-dark">
@@ -256,7 +262,7 @@ foreach ($data as $item) {
 
 
                             </div>
-                            <div class="col-6">
+                            <div class="col-6 custom-spacing">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
