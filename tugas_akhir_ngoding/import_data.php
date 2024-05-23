@@ -247,7 +247,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <div class="card-body">
                             <form class="form-horizontal" action="" method="post" name="uploadCsv" enctype="multipart/form-data">
                                 <div class="mb-3">
-                                    <p>Anda hanya bisa melakukan import data dengan format .CSV</p>
+                                    <p>Anda hanya bisa melakukan import data dengan format CSV</p>
                                     <form method="POST" enctype="multipart/form-data">
                                         <div class="mb-3">
                                             <input type="file" name="file" id="csvFileInput" class="form-control">
@@ -294,7 +294,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <tr>
                                         <th>ID</th>
                                         <th>Data Asli</th> <!-- Ini sebelumnya adalah 'Author' -->
-                                        <th>Labelling</th> <!-- Ini sebelumnya adalah 'Status' -->
+                                        <th>Label</th> <!-- Ini sebelumnya adalah 'Status' -->
                                     </tr>
                                 </thead>
                                 <tbody>

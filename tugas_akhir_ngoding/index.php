@@ -188,7 +188,7 @@ $conn = null;  // Tutup koneksi database
                 </div>
                 <div class="row">
                     <div class="col-md-4">
-                        <div class="card rounded shadow-sm">
+                        <div class="card rounded-3 shadow-sm">
                             <div class="card-body">
                                 <h5 class="card-title">Jumlah Data</h5>
                                 <p class="card-text"><?php echo $totalData['total']; ?></p>
@@ -199,7 +199,7 @@ $conn = null;  // Tutup koneksi database
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card rounded shadow-sm">
+                        <div class="card rounded-3 shadow-sm">
                             <div class="card-body">
                                 <h5 class="card-title">Jumlah Data Training</h5>
                                 <p class="card-text"><?php echo $totalTraining['total']; ?></p>
@@ -210,7 +210,7 @@ $conn = null;  // Tutup koneksi database
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card rounded shadow-sm">
+                        <div class="card rounded-3   shadow-sm">
                             <div class="card-body">
                                 <h5 class="card-title">Jumlah Data Testing</h5>
                                 <p class="card-text"><?php echo $totalTesting['total']; ?></p>

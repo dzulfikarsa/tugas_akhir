@@ -259,7 +259,18 @@ foreach ($data as $item) {
                                         </span>
                                     </p>
                                 </div>
-
+                                <div class="fw-normal">
+                                    <h4 class="fw-bold">Keterangan:</h4>
+                                    <ul>
+                                        <li><strong>TP (True Positive):</strong><br> Kelas hasil prediksi dan kelas asli sama-sama hoax.</li>
+                                        <br>
+                                        <li><strong>FP (False Positive):</strong><br>Kelas hasil prediksi hoax dan kelas asli non-hoax.</li>
+                                        <br>
+                                        <li><strong>TN (True Negative):</strong><br>Kelas hasil prediksi dan kelas asli sama-sama non-hoax.</li>
+                                        <br>
+                                        <li><strong>FN (False Negative):</strong><br>Kelas hasil prediksi non-hoax dan kelas asli hoax.</li>
+                                    </ul>
+                                </div>
 
                             </div>
                             <div class="col-6 custom-spacing">
@@ -281,7 +292,7 @@ foreach ($data as $item) {
                                                 <h6 class="card-title card-header-custom m-0">Total Prediksi Non-Hoax</h6>
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="card-body-custom m-0"><?php echo $totalNonHoax; ?></p>
-                                                    <i class="fa-solid fa-check-circle" style="color:#007BFF;"></i>
+                                                    <i class="fa-solid fa-check-circle" style="color:#b8e0d2;"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -371,12 +382,10 @@ foreach ($data as $item) {
                         label: 'Hasil Prediksi',
                         data: [totalHoax, totalNonHoax],
                         backgroundColor: [
-
                             'rgba(255, 206, 86, 0.2)',
                             'rgba(75, 192, 192, 0.2)'
                         ],
                         borderColor: [
-
                             'rgba(255, 206, 86, 1)',
                             'rgba(75, 192, 192, 1)'
                         ],

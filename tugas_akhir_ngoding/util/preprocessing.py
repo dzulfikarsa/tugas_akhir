@@ -39,7 +39,7 @@ def cleansing(data):
 
         original_title = item['title'].lower()
         cleaned_title = re.sub(r'[^a-z\s]', '', original_title)
-        item['title'] = re.sub(r'\s+', ' ', cleaned_title).strip()
+        item['title'] = re.sub(r'\s +', ' ', cleaned_title).strip()
     return data
 
 
