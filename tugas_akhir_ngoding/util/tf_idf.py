@@ -72,9 +72,6 @@ def hitung_bobot(tf, idf, data):
     
     return hasil_tf_idf
 
-        
-        
-
 def hitung_bobot_per_kalimat(kalimat_list, bobot_kata, n_frequency):
     bobot_per_kalimat = []
     for kalimat, nf in zip(kalimat_list, n_frequency):
