@@ -35,7 +35,7 @@
     if (isset($_POST['update_label'])) {
         $id = $_POST['id'];
         $newLabel = $_POST['label'];
-        $updateQuery = "UPDATE data_preprocessing SET label = :label WHERE id = :id";
+        $updateQuery = "UPDATE data_preprocessing SET label = :label WHERE id_preprocessing = :id";
         $stmt = $conn->prepare($updateQuery);
         $stmt->bindParam(':label', $newLabel);
         $stmt->bindParam(':id', $id);
@@ -46,7 +46,19 @@
         }
     }
 
-    $query = "SELECT id, teks, label FROM data_preprocessing";
+    if (isset($_POST['delete'])) {
+        $idToDelete = $_POST['id_to_delete'];
+        $deleteQuery = "DELETE FROM data_preprocessing WHERE id_preprocessing = :id";
+        $stmt = $conn->prepare($deleteQuery);
+        $stmt->bindParam(':id', $idToDelete, PDO::PARAM_INT);
+        if ($stmt->execute()) {
+            $message_delete = "Data berhasil dihapus.";
+        } else {
+            $message_delete = "Gagal menghapus data.";
+        }
+    }
+
+    $query = "SELECT id_preprocessing, teks, label FROM data_preprocessing";
     $stmt = $conn->prepare($query);
     $stmt->execute();
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -219,7 +231,7 @@
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th style="width: 60%;">Clean Text</th>
+                                            <th style="width: 60%;">Data Bersih</th>
                                             <th>Label</th>
                                             <th>Action</th>
                                         </tr>
@@ -227,11 +239,11 @@
                                     <tbody>
                                         <?php foreach ($results as $row) : ?>
                                             <tr>
-                                                <td><?= htmlspecialchars($row['id']) ?></td>
+                                                <td><?= htmlspecialchars($row['id_preprocessing']) ?></td>
                                                 <td><?= htmlspecialchars($row['teks']) ?></td>
                                                 <td>
                                                     <form method="post" action="">
-                                                        <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                        <input type="hidden" name="id" value="<?= $row['id_preprocessing'] ?>">
                                                         <input type="hidden" name="update_label" value="1">
                                                         <select name="label" class="form-control status-dropdown" onchange="this.form.submit()">
                                                             <option value="Hoax" <?= $row['label'] === 'Hoax' ? 'selected' : '' ?>>Hoax</option>
@@ -239,7 +251,14 @@
                                                         </select>
                                                     </form>
                                                 </td>
-                                                <td></td>
+                                                <td>
+
+                                                    <!-- Tombol Hapus -->
+                                                    <form method="post" action="" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                                        <input type="hidden" name="id_to_delete" value="<?= $row['id_preprocessing'] ?>">
+                                                        <button type="submit" name="delete" class="btn btn-danger btn-sm">Hapus</button>
+                                                    </form>
+                                                </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>

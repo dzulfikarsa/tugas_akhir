@@ -17,6 +17,24 @@ $stmtTesting->execute();
 $rowTesting = $stmtTesting->fetch(PDO::FETCH_ASSOC);
 $totalTesting = $rowTesting['totalTesting'];
 
+
+
+$jsonFilePath = 'confusion_matrix.json';
+
+if (file_exists($jsonFilePath)) {
+    $jsonData = file_get_contents($jsonFilePath);
+    $data = json_decode($jsonData, true); // Decoding the JSON as an associative array
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        $data = null; // Set to null if there's a decoding error
+    }
+} else {
+    $data = null; // Set to null if the file does not exist
+}
+
+echo "<script>var confusionMatrix = " . json_encode($data) . ";</script>";
+
+
 // Load JSON file
 $jsonData = file_get_contents('prediction_results.json');
 // Decode JSON data into PHP array
@@ -334,43 +352,82 @@ foreach ($data as $item) {
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
-        function loadData() {
-            fetch('confusion_matrix.json')
-                .then(response => response.json())
-                .then(data => {
-                    const TP = data["TP (True Positive)"];
-                    const TN = data["TN (True Negative)"];
-                    const FP = data["FP (False Positive)"];
-                    const FN = data["FN (False Negative)"];
+        // function loadData() {
+        //     fetch('confusion_matrix.json')
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             const TP = data["TP (True Positive)"];
+        //             const TN = data["TN (True Negative)"];
+        //             const FP = data["FP (False Positive)"];
+        //             const FN = data["FN (False Negative)"];
+        //             console.log(TP);
+        //             document.getElementById('tp').innerHTML = TP;
+        //             document.getElementById('fn').innerHTML = FN;
+        //             document.getElementById('fp').innerHTML = FP;
+        //             document.getElementById('tn').innerHTML = TN;
 
-                    document.getElementById('tp').innerHTML = TP;
-                    document.getElementById('fn').innerHTML = FN;
-                    document.getElementById('fp').innerHTML = FP;
-                    document.getElementById('tn').innerHTML = TN;
+        //             // Calculate metrics
+        //             const accuracy = ((TP + TN) / (TP + TN + FP + FN)).toFixed(3);
+        //             const precision = (TP / (TP + FP)).toFixed(3);
+        //             const recall = (TP / (TP + FN)).toFixed(3);
 
-                    // Calculate metrics
-                    const accuracy = ((TP + TN) / (TP + TN + FP + FN)).toFixed(3);
-                    const precision = (TP / (TP + FP)).toFixed(3);
-                    const recall = (TP / (TP + FN)).toFixed(3);
+        //             // Set formula LaTeX
+        //             document.getElementById('accuracy_formula').innerText = `\\(\\frac{TP + TN}{TP + TN + FP + FN}\\)`;
+        //             document.getElementById('accuracy_breakdown').innerText = `\\(\\frac{${TP} + ${TN}}{${TP} + ${TN} + ${FP} + ${FN}}\\)`;
+        //             document.getElementById('accuracy_result').innerHTML = `= ${accuracy}`;
 
-                    // Set formula LaTeX
-                    document.getElementById('accuracy_formula').innerText = `\\(\\frac{TP + TN}{TP + TN + FP + FN}\\)`;
-                    document.getElementById('accuracy_breakdown').innerText = `\\(\\frac{${TP} + ${TN}}{${TP} + ${TN} + ${FP} + ${FN}}\\)`;
-                    document.getElementById('accuracy_result').innerHTML = `= ${accuracy}`;
+        //             document.getElementById('precision_formula').innerText = `\\(\\frac{TP}{TP + FP}\\)`;
+        //             document.getElementById('precision_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FP}}\\)`;
+        //             document.getElementById('precision_result').innerHTML = `= ${precision}`;
 
-                    document.getElementById('precision_formula').innerText = `\\(\\frac{TP}{TP + FP}\\)`;
-                    document.getElementById('precision_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FP}}\\)`;
-                    document.getElementById('precision_result').innerHTML = `= ${precision}`;
+        //             document.getElementById('recall_formula').innerText = `\\(\\frac{TP}{TP + FN}\\)`;
+        //             document.getElementById('recall_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FN}}\\)`;
+        //             document.getElementById('recall_result').innerHTML = `= ${recall}`;
 
-                    document.getElementById('recall_formula').innerText = `\\(\\frac{TP}{TP + FN}\\)`;
-                    document.getElementById('recall_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FN}}\\)`;
-                    document.getElementById('recall_result').innerHTML = `= ${recall}`;
+        //             // Ensure MathJax updates the display
+        //             MathJax.typesetPromise();
+        //         })
+        //         .catch(error => console.error('Error loading the data:', error));
+        // }
 
-                    // Ensure MathJax updates the display
-                    MathJax.typesetPromise();
-                })
-                .catch(error => console.error('Error loading the data:', error));
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (confusionMatrix) {
+                const TP = confusionMatrix["TP (True Positive)"];
+                const TN = confusionMatrix["TN (True Negative)"];
+                const FP = confusionMatrix["FP (False Positive)"];
+                const FN = confusionMatrix["FN (False Negative)"];
+                const accuracy = confusionMatrix["Accuracy"];
+                const precision = confusionMatrix["Precision"];
+                const recall = confusionMatrix["Recall"];
+
+                // Update the DOM elements with LaTeX syntax
+                document.getElementById('accuracy_formula').innerText = `\\(\\frac{TP + TN}{TP + TN + FP + FN}\\)`;
+                document.getElementById('accuracy_breakdown').innerText = `\\(\\frac{${TP} + ${TN}}{${TP} + ${TN} + ${FP} + ${FN}}\\)`;
+
+                document.getElementById('precision_formula').innerText = `\\(\\frac{TP}{TP + FP}\\)`;
+                document.getElementById('precision_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FP}}\\)`;
+
+                document.getElementById('recall_formula').innerText = `\\(\\frac{TP}{TP + FN}\\)`;
+                document.getElementById('recall_breakdown').innerText = `\\(\\frac{${TP}}{${TP} + ${FN}}\\)`;
+
+                // Set the non-LaTeX content
+                document.getElementById('tp').textContent = TP;
+                document.getElementById('tn').textContent = TN;
+                document.getElementById('fp').textContent = FP;
+                document.getElementById('fn').textContent = FN;
+                document.getElementById('accuracy_result').textContent = accuracy.toFixed(3);
+                document.getElementById('precision_result').textContent = precision.toFixed(3);
+                document.getElementById('recall_result').textContent = recall.toFixed(3);
+
+                // Ask MathJax to typeset the updated page
+                MathJax.typesetPromise();
+            } else {
+                console.error('No data available for confusion matrix.');
+                // Optionally, update the DOM to reflect that no data is available
+            }
+        });
+
+
 
         function renderPredictionChart(totalHoax, totalNonHoax) {
             const ctx = document.getElementById('predictionChart').getContext('2d');

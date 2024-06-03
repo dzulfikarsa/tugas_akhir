@@ -70,9 +70,9 @@ if (isset($_POST['delete_all'])) {
 }
 
 
-$query = "SELECT dr.id, dr.title, dp.teks
+$query = "SELECT dr.id_raw, dr.title, dp.teks
           FROM data_raw dr
-          LEFT JOIN data_preprocessing dp ON dr.id = dp.id";
+          LEFT JOIN data_preprocessing dp ON dr.id_raw = dp.id_preprocessing";
 
 $stmt = $conn->prepare($query);
 $stmt->execute();
@@ -284,7 +284,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($results as $row) : ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($row['id']) ?></td>
+                                            <td><?= htmlspecialchars($row['id_raw']) ?></td>
                                             <td><?= htmlspecialchars($row['title']) ?></td>
                                             <td><?= htmlspecialchars($row['teks']) ?></td> <!-- Menggunakan kolom 'title' -->
                                         </tr>

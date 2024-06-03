@@ -4,14 +4,14 @@ import requests
 import csv
 from datetime import datetime
 
-def scraping(value):
+def crawling(value):
     try:
-        # Generate CSV filename based on current timestamp
+        # Membuat nama file CSV berdasarkan timestamp saat ini
         timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         csv_filename = f'api_response_{value}_{timestamp}.csv'
         folder_name = 'data-crawling'
 
-        # API endpoint and parameters
+        # Endpoint API dan parameter
         api_url = "https://yudistira.turnbackhoax.id/api/antihoax/search/"
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -24,45 +24,45 @@ def scraping(value):
             # 'limit': '1'
         }
 
-        # Send POST request to the API
+        # Mengirim permintaan POST ke API
         response = requests.post(api_url, headers=headers, data=data)
         
-        # Check if the request was successful (status code 200)
+        # Memeriksa apakah permintaan berhasil (status code 200)
         if response.status_code == 200:
-            # Parse the JSON response
+            # Mengurai respons JSON
             response_data = response.json()
             
-            # Create folder if it doesn't exist
+            # Membuat folder jika belum ada
             if not os.path.exists(folder_name):
                 os.makedirs(folder_name)
             
-            # Define CSV file path
+            # Mendefinisikan path file CSV
             csv_path = os.path.join(folder_name, csv_filename)
 
-            # Open CSV file for writing
+            # Membuka file CSV untuk ditulis
             with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
-                # Define CSV writer
+                # Mendefinisikan penulis CSV
                 csv_writer = csv.writer(csvfile)
                 
-                # Write header row
+                # Menulis baris header
                 csv_writer.writerow(response_data[0].keys())
                 
-                # Write data rows
+                # Menulis baris data
                 for item in response_data:
                     csv_writer.writerow(item.values())
             
-            print(f"Data saved to {csv_path} successfully.")
+            print(f"Data berhasil disimpan ke {csv_path}.")
 
-            # Move CSV file to the data-crawling folder
+            # Memindahkan file CSV ke folder 'data-crawling'
             shutil.move(csv_filename, folder_name)
-            print(f"CSV file moved to {folder_name} folder.")
+            print(f"File CSV dipindahkan ke folder {folder_name}.")
         else:
-            print(f"Error: API request failed with status code {response.status_code}")
+            print(f"Kesalahan: Permintaan API gagal dengan status code {response.status_code}")
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Kesalahan: {e}")
 
 def main():
-    scraping("pemilu")
+    crawling("pemilu")
 
 if __name__ == "__main__":
     main()

@@ -35,12 +35,12 @@ function isTableEmpty($conn, $tableName)
 
 function splitData($conn)
 {
-    $stmtNonHoax = $conn->prepare("SELECT id, teks, label FROM data_preprocessing WHERE label='non-hoax'");
+    $stmtNonHoax = $conn->prepare("SELECT id_preprocessing, teks, label FROM data_preprocessing WHERE label='non-hoax'");
     $stmtNonHoax->execute();
     $resultNonHoax = $stmtNonHoax->fetchAll(PDO::FETCH_ASSOC);
     $countNonHoax = $stmtNonHoax->rowCount();
 
-    $stmtHoax = $conn->prepare("SELECT id, teks, label FROM data_preprocessing WHERE label='hoax' ORDER BY RAND() LIMIT :countNonHoax");
+    $stmtHoax = $conn->prepare("SELECT id_preprocessing, teks, label FROM data_preprocessing WHERE label='hoax' ORDER BY RAND() LIMIT :countNonHoax");
     $stmtHoax->bindParam(':countNonHoax', $countNonHoax, PDO::PARAM_INT);
     $stmtHoax->execute();
     $resultHoax = $stmtHoax->fetchAll(PDO::FETCH_ASSOC);
@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
             font-weight: bold;
             /* Bold font for the numbers */
         }
-    </style>    
+    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">

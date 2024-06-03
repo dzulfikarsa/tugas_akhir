@@ -26,7 +26,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["import"])) {
                             $insertValues = array_map(function ($value) use ($conn) {
                                 return $conn->quote($value);
                             }, $column);
-                            $sqlInsert = "INSERT INTO data_raw (id, authors, status, classification, title, content, fact, references_link, source_issue, source_link, picture1, picture2, tanggal, tags, conclusion, claim_review, media) VALUES (" . implode(",", $insertValues) . ")";
+                            $sqlInsert = "INSERT INTO data_raw (id_raw, authors, status, classification, title, content, fact, references_link, source_issue, source_link, picture1, picture2, tanggal, tags, conclusion, claim_review, media) VALUES (" . implode(",", $insertValues) . ")";
                             $conn->exec($sqlInsert);
                         } else {
                             $message_import .= "Skipped duplicate title: $title<br>";
@@ -79,7 +79,7 @@ if (isset($_POST['delete_all'])) {
 }
 
 // Mengambil data dari database untuk ditampilkan
-$query = "SELECT id, title, status FROM data_raw";  // Menyesuaikan kolom yang diambil
+$query = "SELECT id_raw, title, status FROM data_raw";  // Menyesuaikan kolom yang diambil
 $stmt = $conn->prepare($query);
 $stmt->execute();
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -300,7 +300,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($results as $row) : ?>
                                         <tr>
-                                            <td><?= htmlspecialchars($row['id']) ?></td>
+                                            <td><?= htmlspecialchars($row['id_raw']) ?></td>
                                             <td><?= htmlspecialchars($row['title']) ?></td> <!-- Menggunakan kolom 'title' -->
                                             <td><?= htmlspecialchars($row['status']) ?></td> <!-- Tetap menggunakan kolom 'status' -->
                                         </tr>

@@ -98,3 +98,5 @@ with open('confusion_matrix.json', 'w') as outfile:
 
 # Tutup koneksi database
 db.close()
+
+print("sukses")

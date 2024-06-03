@@ -4,6 +4,7 @@ import mysql.connector
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import re
+from functools import lru_cache
 
 conn = mysql.connector.connect(
     host="localhost",
@@ -14,86 +15,74 @@ conn = mysql.connector.connect(
 
 cursor = conn.cursor()
 
-def case_folding(data):
+factory = StemmerFactory()
+stemmer = factory.create_stemmer()
+
+factory = StopWordRemoverFactory()
+stopword_remover = factory.create_stop_word_remover()
+
+@lru_cache(maxsize=10000)  # Cache hingga 10,000 kata unik
+def cached_stem(word):
+    return stemmer.stem(word)
+
+def case_folding(text):
     # Ubah teks menjadi huruf kecil
-    for item in data:
-        item['title'] = item['title'].lower()
-    return data
+    text = text.lower()
+    return text
 
-def replacing_slangword(data, slangword):
-    # Membuat kamus dari list slangword yang diberikan
+def replacing_slangword(text, slangword):
+    # Pembuatan dictionary dari list slangword yang sudah ada
     slang_dict = {slang[2]: slang[1] for slang in slangword}
-
-    # Memproses setiap dictionary dalam list data
-    for item in data:
-        words = item['title'].split()
-        # Mengganti setiap kata tidak baku dengan kata baku sesuai kamus
-        replaced_words = [slang_dict.get(word, word) for word in words]
-        item['title'] = ' '.join(replaced_words)
+    # slang_dict = {}
+    # for slang in slangword:
+    #     key = slang[2]
+    #     value = slang[1]
+    #     slang_dict[key] = value
     
-    return data
+    # Proses penggantian kata dilakukan sekali jalan
+    return ' '.join(slang_dict.get(word, word) for word in text.split())
 
-def cleansing(data):    
+def cleansing(text):    
+    text = re.sub(r'[^a-z\s]+|\s+', ' ', text).strip()
+    return text
 
-    for item in data:
-
-        original_title = item['title'].lower()
-        cleaned_title = re.sub(r'[^a-z\s]', '', original_title)
-        item['title'] = re.sub(r'\s +', ' ', cleaned_title).strip()
-    return data
-
-
-def stopword_removal(data):
-    factory = StopWordRemoverFactory()
-    stopword_remover = factory.create_stop_word_remover()
-
-    for item in data:
-        texts = item['title'].split()
-        words = []
-        for text in texts:
-            cleaned_text = stopword_remover.remove(text)
-            words.append(cleaned_text)
-
-        item['title'] = ' '.join(words)
-        
-    return data
+def stopword_removal(text):
+    text = stopword_remover.remove(text)
+    return text
     
-def stemming(texts, exclude_list):
-    factory = StemmerFactory()
-    stemmer = factory.create_stemmer()    
+def stemming(text):
+    # Langsung menggunakan comprehension dan join dalam satu baris
+    return ' '.join(cached_stem(word) for word in text.split())
 
-    for text in texts:
-        stemmed_words = []
-        # Cek apakah kata ada dalam daftar pengecualian
-        words = text['title'].split()
-        for word in words:
-            if word.lower() in exclude_list:
-                stemmed_words.append(word)
-            else:
-                stemmed_words.append(stemmer.stem(word))
-        text['title'] = ' '.join(stemmed_words)
-    return texts
-    
-    
+    # words = text.split()  # Memisahkan teks menjadi kata-kata
+    # stemmed_words = []  # Inisialisasi daftar untuk menyimpan kata-kata yang sudah di-stem atau yang dikecualikan
 
+    # for word in words:
+    #     if word not in exclude_list:
+    #         # Jika kata tidak ada dalam daftar kecualian, lakukan stemming
+    #         stemmed_word = cached_stem(word)
+    #     else:
+    #         # Jika kata ada dalam daftar kecualian, gunakan kata asli
+    #         stemmed_word = word
+    #     stemmed_words.append(stemmed_word)  # Tambahkan kata yang sudah diolah ke daftar
+
+    # # Gabungkan semua kata yang telah diproses kembali menjadi satu string
+    # stemmed_text = ' '.join(stemmed_words)
+    # return stemmed_text
+    
 def preprocessing(data):
-    exclude_list = ["pemilu"]
     cursor.execute("SELECT * FROM slangword")
     slangword = cursor.fetchall()
 
-    hasil = case_folding(data)
-    hasil = cleansing(hasil)
-    hasil = stopword_removal(hasil)
-    hasil = replacing_slangword(hasil, slangword)
-    hasil = stemming(hasil, exclude_list)
-    return hasil
+    for baris in data:
+        hasil = case_folding(baris['title'])
+        hasil = cleansing(hasil)
+        hasil = stopword_removal(hasil)
+        hasil = replacing_slangword(hasil, slangword)
+        hasil = stemming(hasil)
+        baris['title'] = hasil
 
-# def main():
-#     data = [{"id":"16754","title":"Hoaks! Jokowi perintahkan pendemo Pemilu 2024 ditangkap"},{"id":"16797","title":"[SALAH] \ufffdKEJAHATAN KECURANGAN TSM PEMILU 14 FEBRUARI 2024 Yang Di TUTUPI\ufffd"},{"id":"16804","title":"Hoaks! Massa membakar Gedung Bawaslu tolak hasil Pemilu 2024"},{"id":"16811","title":"Keliru, Video Perayaan Kemenangan Pendukung Anies-Muhaimin Setelah Memperoleh 49 Persen Real Count"},{"id":"16814","title":"[SALAH]: Demo menolak Jokowi berkuasa"},{"id":"16819","title":"[KLARIFIKASI] Penyebab Kebakaran Asrama Polisi di Aceh Belum Diketahui"},{"id":"16840","title":"[HOAKS] Video Adian Napitupulu Dihalang-halangi Saat Sidak ke Kantor KPU"},{"id":"16932","title":"[SALAH] Harga Beras Naik Karena Diborong PDIP untuk Kampanye"},{"id":"16982","title":"Demo Ricuh Dalam Video Ini Desak Hak Angket"},{"id":"16985","title":"[KLARIFIKASI] Video Demo Ricuh di DPR pada 2019, Bukan Maret 2024"},{"id":"16995","title":"Hoaks! Risma beberkan Jokowi gunakan bansos Rp400 triliun untuk kemenangan Prabowo-Gibran"},{"id":"17000","title":"[SALAH] Keputusan KPU Batal Secara Hukum"}]
-
-#     hasil = preprocessing(data)
-
-# Print current working directory
+    return data
 
 print("Current Working Directory:", os.getcwd())
 
@@ -110,22 +99,26 @@ else:
     data = []  # Inisialisasi 'data' sebagai list kosong untuk menghindari NameError
 
 processed_data = preprocessing(data)  # Proses title
+insert_query = "INSERT INTO data_preprocessing (id_preprocessing, teks, label) VALUES (%s, %s, %s)"
+insert_values = []
 
-# Memasukkan hasil preprocessing ke tabel data_preprocessing
 for item in processed_data:
-    original_id = item['id']
-    # Mengambil data dari kolom 'title' daripada 'content'
-    title = item['title']  # Ubah 'content' menjadi 'title' di sini
-    
-    label = item['status']  # Sesuaikan ini dengan logika penentuan label Anda
-    print(original_id, title, label)
-    # Siapkan SQL untuk memasukkan data yang telah diproses ke database
-    sql = "INSERT INTO data_preprocessing (id, teks, label) VALUES (%s, %s, %s)"
-    cursor.execute(sql, (original_id, title, label))
+    original_id = item['id_raw']
+    title = item['title']
+    label = item['status']
+    insert_values.append((original_id, title, label))
 
-# Commit transaksi ke database dan tutup cursor
+    # Lakukan batch insert
+    if len(insert_values) >= 100:  # Misalnya batch size adalah 100
+        cursor.executemany(insert_query, insert_values)
+        insert_values = []
+
+# Insert sisa data jika ada
+if insert_values:
+    cursor.executemany(insert_query, insert_values)
+
 conn.commit()
 cursor.close()
 conn.close()
 
-print("Data processed successfully")
+print("Sukses")

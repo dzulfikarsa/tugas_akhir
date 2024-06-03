@@ -19,10 +19,10 @@ if (isset($_POST['mulai'])) {
     // Menjalankan skrip Python dan menangkap output
     $output = shell_exec("python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\pengujian.py");
     // Decode output JSON menjadi array PHP
-    if ($output) {
-        $results = json_decode($output, true);
-    } else {
-        $message_failed = "Gagal menjalankan skrip Python atau skrip tidak menghasilkan output.";
+
+    if (file_exists($file_path)) {
+        $results = json_decode(file_get_contents($file_path), true);
+        $show_card = true;
     }
 }
 
