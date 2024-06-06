@@ -1,9 +1,7 @@
-import json
-import mysql.connector
 import math
 
-def hitung_kata_per_kalimat(kalimat_list):
-    return [len(kalimat[2].split()) for kalimat in kalimat_list]
+# def hitung_kata_per_kalimat(kalimat_list):
+#     return [len(kalimat[2].split()) for kalimat in kalimat_list]
 
 def hitung_kemunculan_global(kalimat_list):
     """Menghitung kemunculan global dari setiap kata."""
@@ -21,7 +19,7 @@ def hitung_kemunculan_global(kalimat_list):
         # print(f"Kalimat: '{kalimat}' -> Kata: {kata_kalimat}")
     return global_kemunculan, total_kata, len(kalimat_list)
 
-def hitung_tf(global_kemunculan, total_kata, data):
+def hitung_tf(data):
     hasil_tf  = []
     # return {kata: jumlah / total_kata for kata, jumlah in global_kemunculan.items()}
     for index, (id, real_text, clean_text, label) in enumerate(data):
@@ -31,6 +29,7 @@ def hitung_tf(global_kemunculan, total_kata, data):
         kata_unik.update(kumpulan_kata)
         for kata in kata_unik:
             hasil = clean_text.count(kata) / len(kumpulan_kata)
+            # print(kata,clean_text.count(kata), len(kumpulan_kata), hasil)
             hasil_tf_per_kalimat.append((index, kata, hasil, label))
         hasil_tf.append(hasil_tf_per_kalimat)
     return hasil_tf
@@ -38,6 +37,7 @@ def hitung_tf(global_kemunculan, total_kata, data):
 def hitung_idf(global_kemunculan, total_kalimat, data):
     # return {kata: math.log(total_kalimat / jumlah) for kata, jumlah in global_kemunculan.items()}
     hasil_idf = []
+    # print(global_kemunculan)
     for index, (id, real_text, clean_text, label) in enumerate(data):
         hasil_idf_per_kalimat = []
         kata_unik = set()
@@ -88,19 +88,21 @@ def tf_idf(data):
     # Melanjutkan dengan proses selanjutnya tanpa case folding
     global_kemunculan, total_kata, total_kalimat = hitung_kemunculan_global(data)
     
-    kata_per_kalimat = hitung_kata_per_kalimat(data)
+    # kata_per_kalimat = hitung_kata_per_kalimat(data)
 
-    tf = hitung_tf(global_kemunculan, total_kata, data)
+    tf = hitung_tf(data)
+    # print(tf)
     # print(type(tf))
     idf = hitung_idf(global_kemunculan, total_kalimat, data)
     # print(idf)
     bobot_kata = hitung_bobot(tf, idf, data)
-    
+    # print(bobot_kata)
     return bobot_kata, idf
+    
 
 def main():
-    testing = tf_idf()
-    # print(testing)    
+    data_list = [(1, 'prabowo capai persen suara hasil pemilu taiwan', 'prabowo capai persen suara hasil pemilu taiwan', 'Hoax'), (2, 'yusril sebut prabowo gibran diskualifikasi', 'yusril sebut prabowo gibran diskualifikasi', 'Hoax'), (3, 'kades ntb amuk massa laku curang pemilu', 'kades ntb amuk massa laku curang pemilu', 'Hoax'), (4, 'masa tenang pemilu apk jalan kota bogor tertib', 'masa tenang pemilu apk jalan kota bogor tertib', 'Non-Hoax'), (5, 'surat suara pemilu coblos ilegal malaysia', 'surat suara pemilu coblos ilegal malaysia', 'Non-Hoax'), (6, 'bawaslu sebut tps indonesia sulit jangkau', 'bawaslu sebut tps indonesia sulit jangkau', 'Non-Hoax')]
+    testing = tf_idf(data_list)
 
 
 if __name__ == "__main__":

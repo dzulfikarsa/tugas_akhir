@@ -11,6 +11,54 @@ $message_submit = "";
 $message_delete = "";
 $alert_message = "";
 
+function countDataPreprocessing($conn)
+{
+    $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'];
+}
+
+function countDataHoaxAndNonHoaxPreprocessing($conn)
+{
+    $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing where label = 'Non-Hoax'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalNonHoaxSebelum = $result['total'];
+
+    $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_preprocessing where label = 'Hoax'");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalHoaxSebelum = $result['total'];
+
+    return array('non_hoax' => $totalNonHoaxSebelum, 'hoax' => $totalHoaxSebelum);
+}
+
+function countDataHoaxAndNonHoaxTrainingTesting($conn)
+{
+    $stmt = $conn->query("SELECT 'total' AS source, 
+    (SELECT COUNT(*) FROM data_training WHERE label = 'Non-Hoax') + 
+    (SELECT COUNT(*) FROM data_testing WHERE label = 'Non-Hoax') AS total;");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalNonHoaxSesudah = $result['total'];
+
+    $stmt = $conn->query("SELECT 'total' AS source, 
+    (SELECT COUNT(*) FROM data_training WHERE label = 'Hoax') + 
+    (SELECT COUNT(*) FROM data_testing WHERE label = 'Hoax') AS total;");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalHoaxSesudah = $result['total'];
+
+    return array('non_hoax' => $totalNonHoaxSesudah, 'hoax' => $totalHoaxSesudah);
+}
+
+
+function countDataSetelahSplit($conn)
+{
+    $stmt = $conn->query("SELECT 'total' AS source, 
+    (SELECT COUNT(*) FROM data_training) + 
+    (SELECT COUNT(*) FROM data_testing) AS total;");
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result['total'];
+}
+
+
 function countDataTraining($conn)
 {
     $stmt = $conn->query("SELECT COUNT(*) AS total FROM data_training");
@@ -35,12 +83,14 @@ function isTableEmpty($conn, $tableName)
 
 function splitData($conn)
 {
+    $seed = 1324;
+    srand($seed);
     $stmtNonHoax = $conn->prepare("SELECT id_preprocessing, teks, label FROM data_preprocessing WHERE label='non-hoax'");
     $stmtNonHoax->execute();
     $resultNonHoax = $stmtNonHoax->fetchAll(PDO::FETCH_ASSOC);
     $countNonHoax = $stmtNonHoax->rowCount();
 
-    $stmtHoax = $conn->prepare("SELECT id_preprocessing, teks, label FROM data_preprocessing WHERE label='hoax' ORDER BY RAND() LIMIT :countNonHoax");
+    $stmtHoax = $conn->prepare("SELECT id_preprocessing, teks, label FROM data_preprocessing WHERE label='hoax' ORDER BY RAND($seed) LIMIT :countNonHoax");
     $stmtHoax->bindParam(':countNonHoax', $countNonHoax, PDO::PARAM_INT);
     $stmtHoax->execute();
     $resultHoax = $stmtHoax->fetchAll(PDO::FETCH_ASSOC);
@@ -52,14 +102,14 @@ function splitData($conn)
     shuffle($data);
 
     $splitPoint = round(0.8 * count($data));
-    $stmtTraining = $conn->prepare("INSERT INTO data_training (real_text, clean_text, label) VALUES (?, ?, ?)");
-    $stmtTesting = $conn->prepare("INSERT INTO data_testing (real_text, clean_text, label) VALUES (?, ?, ?)");
+    $stmtTraining = $conn->prepare("INSERT INTO data_training (id_training, real_text, clean_text, label) VALUES (?, ?, ?, ?)");
+    $stmtTesting = $conn->prepare("INSERT INTO data_testing (id_testing, real_text, clean_text, label) VALUES (?, ?, ?, ?)");
 
     foreach ($data as $index => $row) {
         if ($index < $splitPoint) {
-            $stmtTraining->execute([$row['teks'], $row['teks'], $row['label']]);
+            $stmtTraining->execute([$row['id_preprocessing'], $row['teks'], $row['teks'], $row['label']]);
         } else {
-            $stmtTesting->execute([$row['teks'], $row['teks'], $row['label']]);
+            $stmtTesting->execute([$row['id_preprocessing'], $row['teks'], $row['teks'], $row['label']]);
         }
     }
     return "Data traning dan testing berhasil di split";
@@ -95,7 +145,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
     $testingCount = countDataTesting($conn);
 }
 
-
+$jumlahDataPreprocessing = countDataPreprocessing($conn);
+$jumlahDataSetelahSplit = countDataSetelahSplit($conn);
+$jumlahDistribusiLabelSebelum = countDataHoaxAndNonHoaxPreprocessing($conn);
+$jumlahDistribusiLabelSesudah = countDataHoaxAndNonHoaxTrainingTesting($conn);
 ?>
 
 <!DOCTYPE html>
@@ -280,6 +333,52 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                     <div class="card">
                         <!-- Card Body -->
                         <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Sebelum</h6>
+                                            <h2 class="display-4"><?= $jumlahDataPreprocessing ?></h2>
+                                            <div class="card-body-icon">
+                                                <i class="fa-solid fa-database"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Hoax</h6>
+                                            <h2 class="display-4"><?= $jumlahDistribusiLabelSebelum['hoax'] ?></h2>
+                                            <div class="card-body-icon">
+                                                <i class="fa-solid fa-database"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Non-Hoax</h6>
+                                            <h2 class="display-4"><?= $jumlahDistribusiLabelSebelum['non_hoax'] ?></h2>
+                                            <div class="card-body-icon">
+                                                <i class="fa-solid fa-database"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- <div class="col-md-6">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Distribusi Hoax dan Non-Hoax</h6>
+                                            <div class="card-body">
+                                                <canvas id="predictionChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                            </div>
+                            
                             <div class="row mb-5">
                                 <div class="col-6">
                                     <form action="" method="post">
@@ -319,34 +418,72 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
                             <?php if (!empty($alert_message)) : ?>
                                 <div class="alert alert-warning mt-2"><?php echo $alert_message; ?></div>
                             <?php endif; ?>
-                            <div class="container mt-5">
-                                <div class="row">
-                                    <!-- Training Data Card -->
-                                    <div class="col-md-6">
-                                        <div class="card card-custom shadow rounded-3">
-                                            <div class="card-body-custom p-3">
-                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Training</h6>
-                                                <h2 class="display-4"><?= $trainingCount ?></h2>
-                                                <div class="card-body-icon">
-                                                    <i class="fa-solid fa-dumbbell"></i>
-                                                </div>
+
+                            <div class="row">
+                                <!-- Training Data Card -->
+                                <div class="col-md-6">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Training</h6>
+                                            <h2 class="display-4"><?= $trainingCount ?></h2>
+                                            <div class="card-body-icon">
+                                                <i class="fa-solid fa-dumbbell"></i>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- Testing Data Card -->
-                                    <div class="col-md-6">
-                                        <div class="card card-custom shadow rounded-3">
-                                            <div class="card-body-custom p-3">
-                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Testing</h6>
-                                                <h2 class="display-4"><?= $testingCount ?></h2>
-                                                <div class="card-body-icon">
-                                                    <i class="fa-solid fa-vial"></i>
-                                                </div>
+                                </div>
+                                <!-- Testing Data Card -->
+                                <div class="col-md-6">
+                                    <div class="card card-custom shadow rounded-3">
+                                        <div class="card-body-custom p-3">
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Testing</h6>
+                                            <h2 class="display-4"><?= $testingCount ?></h2>
+                                            <div class="card-body-icon">
+                                                <i class="fa-solid fa-vial"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+
+                            <?php if ($jumlahDataSetelahSplit > 0 && $jumlahDistribusiLabelSesudah['hoax'] > 0 && $jumlahDistribusiLabelSesudah['non_hoax'] > 0) : ?>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-3">
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Setelah</h6>
+                                                <h2 class="display-4"><?= $jumlahDataSetelahSplit ?></h2>
+                                                <div class="card-body-icon">
+                                                    <i class="fa-solid fa-database"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-3">
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Hoax</h6>
+                                                <h2 class="display-4"><?= $jumlahDistribusiLabelSesudah['hoax'] ?></h2>
+                                                <div class="card-body-icon">
+                                                    <i class="fa-solid fa-database"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="card card-custom shadow rounded-3">
+                                            <div class="card-body-custom p-3">
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Non-Hoax</h6>
+                                                <h2 class="display-4"><?= $jumlahDistribusiLabelSesudah['non_hoax'] ?></h2>
+                                                <div class="card-body-icon">
+                                                    <i class="fa-solid fa-database"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -404,10 +541,54 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (empty($message_submit) && empty($m
 
     <!-- Page level custom scripts -->
     <script src="datatables/datatables-demo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         function confirmDelete() {
             $('#deleteModal').modal('show');
         }
+
+        function renderPredictionChart(totalHoax, totalNonHoax) {
+            const ctx = document.getElementById('predictionChart').getContext('2d');
+            const predictionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hoax', 'Non-Hoax'],
+                    datasets: [{
+                        label: 'Hasil Prediksi',
+                        data: [totalHoax, totalNonHoax],
+                        backgroundColor: [
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            onClick: (e) => e.stopPropagation(),
+                            labels: {
+                                usePointStyle: false, // This disables the point style, i.e., the symbol
+                                boxWidth: 0 // Set the width of the colored box to 0 to hide it
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Call this function with the actual data
+        renderPredictionChart(<?php echo $jumlahDistribusiLabelSebelum['hoax']; ?>, <?php echo $jumlahDistribusiLabelSebelum['non_hoax']; ?>);
     </script>
 
 

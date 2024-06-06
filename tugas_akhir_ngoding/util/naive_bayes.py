@@ -72,13 +72,16 @@ def hitung_probabilitas_likelihood(total_tf_idf, total_idf, data):
                 else:
                     bobot_kata_tf_idf_per_kelas[label][word] = tf_idf_score
                 total_tf_idf_per_kelas[label] += tf_idf_score
+
+    # print(total_idf)
+    total_idf_keseluruhan = 0
+    unique_words = set() 
     for sublist in total_idf:
-        for document_id, word, idf_value, label in sublist:
-            if word not in total_idf_unik:
-                total_idf_unik[word] = idf_value
-            else:
-                assert total_idf_unik[word] == idf_value
-            total_idf_keseluruhan += idf_value
+        for index, kata, idf_value, flag in sublist:
+            unique_words.add((kata, idf_value))
+
+    for kata, idf_value in unique_words:
+        total_idf_keseluruhan += idf_value
 
     #mulai perhitungan probabilitas likelihood
     probabilitas_likelihood = {
@@ -90,6 +93,8 @@ def hitung_probabilitas_likelihood(total_tf_idf, total_idf, data):
         for word in kata_unik:
             # Add 1 to the TF-IDF score of the word (Laplace smoothing)
             hasil = (bobot_kata_tf_idf_per_kelas[label].get(word, 0) + 1) / (total_tf_idf_per_kelas[label] + total_idf_keseluruhan)
+            # print(word, label, bobot_kata_tf_idf_per_kelas[label].get(word, 0), total_tf_idf_per_kelas[label], total_idf_keseluruhan)
+            # print()
             # Add total IDF to the total TF-IDF of the class (Laplace smoothing in the denominator)
             probabilitas_likelihood[label][word] = hasil
     return probabilitas_likelihood
