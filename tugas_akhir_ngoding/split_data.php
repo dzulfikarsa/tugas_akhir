@@ -81,7 +81,7 @@ function isTableEmpty($conn, $tableName)
     return $result['total'] == 0;
 }
 
-function splitData($conn)
+function splitData($conn, $rasio)
 {
     $seed = 1324;
     srand($seed);
@@ -101,7 +101,7 @@ function splitData($conn)
     $data = array_merge($resultNonHoax, $resultHoax);
     shuffle($data);
 
-    $splitPoint = round(0.8 * count($data));
+    $splitPoint = round($rasio * count($data));
     $stmtTraining = $conn->prepare("INSERT INTO data_training (id_training, real_text, clean_text, label) VALUES (?, ?, ?, ?)");
     $stmtTesting = $conn->prepare("INSERT INTO data_testing (id_testing, real_text, clean_text, label) VALUES (?, ?, ?, ?)");
 
@@ -118,10 +118,11 @@ function splitData($conn)
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['splitData'])) {
+        $rasio = $_POST['split_ratio'];
         if (isTableEmpty($conn, "data_preprocessing")) {
             $alert_message = "Data preprocessing kosong, tidak dapat melakukan split data.";
         } else {
-            $message_submit = splitData($conn);
+            $message_submit = splitData($conn, $rasio);
             $trainingCount = countDataTraining($conn);
             $testingCount = countDataTesting($conn);
         }
@@ -149,6 +150,46 @@ $jumlahDataPreprocessing = countDataPreprocessing($conn);
 $jumlahDataSetelahSplit = countDataSetelahSplit($conn);
 $jumlahDistribusiLabelSebelum = countDataHoaxAndNonHoaxPreprocessing($conn);
 $jumlahDistribusiLabelSesudah = countDataHoaxAndNonHoaxTrainingTesting($conn);
+// Menghitung jumlah total data preprocessing dan training
+$trainingCount = countDataTraining($conn);
+$testingCount = countDataTesting($conn);
+
+// Mendefinisikan nilai rasio default jika tidak ada data training
+$defaultRatio = '0.8';
+
+// Jika training count adalah 0 atau tidak ada data preprocessing, gunakan rasio default
+if ($trainingCount == 0 || $testingCount == 0) {
+    $selected_ratio = $defaultRatio;
+} else {
+    // Menghitung rasio training dari total data
+    $totalData = $trainingCount + $testingCount;
+    $computedRatio = $trainingCount / $totalData;
+
+    // Mendefinisikan nilai rasio yang mungkin
+    $ratios = [
+        '0.9' => 0.9,
+        '0.8' => 0.8,
+        '0.7' => 0.7,
+        '0.6' => 0.6,
+        '0.5' => 0.5
+    ];
+
+    // Menentukan rasio yang paling mendekati hasil perhitungan
+    $closest = null;
+    $closestDistance = PHP_FLOAT_MAX;
+    foreach ($ratios as $key => $ratio) {
+        $distance = abs($computedRatio - $ratio);
+        if ($distance < $closestDistance) {
+            $closest = $key;
+            $closestDistance = $distance;
+        }
+    }
+
+    $selected_ratio = $closest;
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -378,12 +419,10 @@ $jumlahDistribusiLabelSesudah = countDataHoaxAndNonHoaxTrainingTesting($conn);
                                     </div>
                                 </div> -->
                             </div>
-                            
-                            <div class="row mb-5">
+
+                            <div class="row mb-3">
                                 <div class="col-6">
-                                    <form action="" method="post">
-                                        <button type="submit" class="btn btn-primary w-100" name="splitData">Split Data</button>
-                                    </form>
+                                    <button form="dataSplitForm" type="submit" class="btn btn-primary w-100" name="splitData">Split Data</button>
                                 </div>
                                 <div class="col-6">
                                     <button type="button" class="btn btn-danger w-100" onclick="confirmDelete()">Hapus Semua Data</button>
@@ -407,6 +446,22 @@ $jumlahDistribusiLabelSesudah = countDataHoaxAndNonHoaxTrainingTesting($conn);
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                            <div class='row mb-4'>
+                                <div>
+                                    <form id='dataSplitForm' action='' method='post'>
+                                        <label for='split-ratio'>Pilih Rasio Pembagian Data Training dan Testing. Nilai default adalah 80:20</label>
+                                        <select class='form-select' id='split-ratio' name='split_ratio'>
+                                            <?php
+                                            $options = ['0.9' => '90:10', '0.8' => '80:20', '0.7' => '70:30', '0.6' => '60:40', '0.5' => '50:50'];
+                                            foreach ($options as $value => $label) {
+                                                $isSelected = ($selected_ratio == $value) ? 'selected' : '';
+                                                echo "<option value='{$value}' {$isSelected}>{$label} (Training : Test)</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                    </form>
                                 </div>
                             </div>
                             <?php if (!empty($message_delete)) : ?>
