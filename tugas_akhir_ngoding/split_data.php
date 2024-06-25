@@ -189,7 +189,6 @@ if ($trainingCount == 0 || $testingCount == 0) {
 }
 
 
-
 ?>
 
 <!DOCTYPE html>
@@ -339,6 +338,9 @@ if ($trainingCount == 0 || $testingCount == 0) {
                         <li> <a class="waves-effect waves-dark" href="visualisasi_hasil.php" aria-expanded="false">
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
                         </li>
+                        <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
+                        </li>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
@@ -378,7 +380,7 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                 <div class="col-md-6">
                                     <div class="card card-custom shadow rounded-3">
                                         <div class="card-body-custom p-3">
-                                            <h6 class="card-title card-header-custom m-0">Jumlah Data Sebelum</h6>
+                                            <h6 class="card-title card-header-custom m-0">Jumlah Data</h6>
                                             <h2 class="display-4"><?= $jumlahDataPreprocessing ?></h2>
                                             <div class="card-body-icon">
                                                 <i class="fa-solid fa-database"></i>
@@ -392,7 +394,7 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                             <h6 class="card-title card-header-custom m-0">Jumlah Data Hoax</h6>
                                             <h2 class="display-4"><?= $jumlahDistribusiLabelSebelum['hoax'] ?></h2>
                                             <div class="card-body-icon">
-                                                <i class="fa-solid fa-database"></i>
+                                                <i class="fa-solid fa-exclamation-triangle"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -403,21 +405,11 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                             <h6 class="card-title card-header-custom m-0">Jumlah Data Non-Hoax</h6>
                                             <h2 class="display-4"><?= $jumlahDistribusiLabelSebelum['non_hoax'] ?></h2>
                                             <div class="card-body-icon">
-                                                <i class="fa-solid fa-database"></i>
+                                                <i class="fa-solid fa-check-circle"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- <div class="col-md-6">
-                                    <div class="card card-custom shadow rounded-3">
-                                        <div class="card-body-custom p-3">
-                                            <h6 class="card-title card-header-custom m-0">Distribusi Hoax dan Non-Hoax</h6>
-                                            <div class="card-body">
-                                                <canvas id="predictionChart"></canvas>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> -->
                             </div>
 
                             <div class="row mb-3">
@@ -501,16 +493,19 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                 </div>
                             </div>
 
+                            <div>
+                                <h4>Data Setelah Undersampling </h4>
+                            </div>
 
                             <?php if ($jumlahDataSetelahSplit > 0 && $jumlahDistribusiLabelSesudah['hoax'] > 0 && $jumlahDistribusiLabelSesudah['non_hoax'] > 0) : ?>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
                                             <div class="card-body-custom p-3">
-                                                <h6 class="card-title card-header-custom m-0">Jumlah Data Setelah</h6>
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Data</h6>
                                                 <h2 class="display-4"><?= $jumlahDataSetelahSplit ?></h2>
                                                 <div class="card-body-icon">
-                                                    <i class="fa-solid fa-database"></i>
+                                                    <i class="fa-solid fa-filter"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -521,7 +516,7 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                                 <h6 class="card-title card-header-custom m-0">Jumlah Data Hoax</h6>
                                                 <h2 class="display-4"><?= $jumlahDistribusiLabelSesudah['hoax'] ?></h2>
                                                 <div class="card-body-icon">
-                                                    <i class="fa-solid fa-database"></i>
+                                                    <i class="fa-solid fa-exclamation-triangle"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -532,7 +527,7 @@ if ($trainingCount == 0 || $testingCount == 0) {
                                                 <h6 class="card-title card-header-custom m-0">Jumlah Data Non-Hoax</h6>
                                                 <h2 class="display-4"><?= $jumlahDistribusiLabelSesudah['non_hoax'] ?></h2>
                                                 <div class="card-body-icon">
-                                                    <i class="fa-solid fa-database"></i>
+                                                    <i class="fa-solid fa-check-circle"></i>
                                                 </div>
                                             </div>
                                         </div>

@@ -1,4 +1,5 @@
 import math
+import json
 
 # def hitung_kata_per_kalimat(kalimat_list):
 #     return [len(kalimat[2].split()) for kalimat in kalimat_list]
@@ -83,6 +84,11 @@ def hitung_bobot_per_kalimat(kalimat_list, bobot_kata, n_frequency):
 def hitung_n_frequency(kata_per_kalimat, minThreshold):
     return [max(minThreshold, jumlah_kata) for jumlah_kata in kata_per_kalimat]
 
+
+def save_to_json(data, file_path):
+    with open(file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
 def tf_idf(data):
 
     # Melanjutkan dengan proses selanjutnya tanpa case folding
@@ -96,6 +102,7 @@ def tf_idf(data):
     idf = hitung_idf(global_kemunculan, total_kalimat, data)
     # print(idf)
     bobot_kata = hitung_bobot(tf, idf, data)
+    save_to_json(bobot_kata, 'tf_idf.json')
     # print(bobot_kata)
     return bobot_kata, idf
     

@@ -6,14 +6,6 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import re
 from functools import lru_cache
 
-conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="",    
-    database="deteksi_hoax"
-)
-
-cursor = conn.cursor()
 
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
@@ -70,10 +62,10 @@ def stemming(text):
     # stemmed_text = ' '.join(stemmed_words)
     # return stemmed_text
     
-def preprocessing(data):
+def preprocessing(data, cursor):
     cursor.execute("SELECT * FROM slangword")
     slangword = cursor.fetchall()
-
+    
     for baris in data:
         hasil = case_folding(baris['title'])
         hasil = cleansing(hasil)
@@ -84,41 +76,51 @@ def preprocessing(data):
 
     return data
 
-print("Current Working Directory:", os.getcwd())
+if __name__ == "__main__":
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",    
+        database="deteksi_hoax"
+    )
 
-# Menggunakan raw string untuk path
-file_path = r'C:\xampp\htdocs\tugas_akhir\tugas_akhir_ngoding\util\data.json'
-# file_path = r'util\data.json'
+    cursor = conn.cursor()
 
-if os.path.exists(file_path):
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-    # print("Data loaded successfully:", data)
-else:
-    print(f"File not found: {file_path}")
-    data = []  # Inisialisasi 'data' sebagai list kosong untuk menghindari NameError
+    print("Current Working Directory:", os.getcwd())
 
-processed_data = preprocessing(data)  # Proses title
-insert_query = "INSERT INTO data_preprocessing (id_preprocessing, teks, label) VALUES (%s, %s, %s)"
-insert_values = []
+    # Menggunakan raw string untuk path
+    file_path = r'C:\xampp\htdocs\tugas_akhir\tugas_akhir_ngoding\util\data.json'
 
-for item in processed_data:
-    original_id = item['id_raw']
-    title = item['title']
-    label = item['status']
-    insert_values.append((original_id, title, label))
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+        # print("Data loaded successfully:", data)
+    else:
+        print(f"File not found: {file_path}")
+        data = []  # Inisialisasi 'data' sebagai list kosong untuk menghindari NameError
 
-    # Lakukan batch insert
-    if len(insert_values) >= 100:  # Misalnya batch size adalah 100
+    processed_data = preprocessing(data, cursor)  # Proses title
+    insert_query = "INSERT INTO data_preprocessing (id_preprocessing, teks, label) VALUES (%s, %s, %s)"
+    insert_values = []
+
+    for item in processed_data:
+        original_id = item['id_raw']
+        title = item['title']
+        label = item['status']
+        insert_values.append((original_id, title, label))
+
+        # Lakukan batch insert
+        if len(insert_values) >= 100:  # Misalnya batch size adalah 100
+            cursor.executemany(insert_query, insert_values)
+            insert_values = []
+
+    # Insert sisa data jika ada
+    if insert_values:
         cursor.executemany(insert_query, insert_values)
-        insert_values = []
 
-# Insert sisa data jika ada
-if insert_values:
-    cursor.executemany(insert_query, insert_values)
+    conn.commit()
+    cursor.close()
+    conn.close()
+    print("Sukses")
 
-conn.commit()
-cursor.close()
-conn.close()
 
-print("Sukses")

@@ -49,13 +49,6 @@ if (isset($_POST['run_preprocessing'])) {
 }
 
 
-// if ($result) {
-//     $message_import = "Data berhasil diimpor.";
-//     $importSuccess = true; // Set flag to true on successful import
-// } else {
-//     $message_import = "Error pada saat import data.";
-// }
-
 $deleteSuccess = false; // Flag to track delete success
 $nothingToDelete = false; // Flag to check if there's nothing to delete
 if (isset($_POST['delete_all'])) {
@@ -68,7 +61,6 @@ if (isset($_POST['delete_all'])) {
         $nothingToDelete = true;
     }
 }
-
 
 $query = "SELECT dr.id_raw, dr.title, dp.teks
           FROM data_raw dr
@@ -207,6 +199,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </li>
                         <li> <a class="waves-effect waves-dark" href="visualisasi_hasil.php" aria-expanded="false">
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
+                        </li>
+                        <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
                         </li>
                     </ul>
                 </nav>

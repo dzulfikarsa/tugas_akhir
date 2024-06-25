@@ -17,8 +17,6 @@ $stmtTesting->execute();
 $rowTesting = $stmtTesting->fetch(PDO::FETCH_ASSOC);
 $totalTesting = $rowTesting['totalTesting'];
 
-
-
 $jsonFilePath = 'confusion_matrix.json';
 
 if (file_exists($jsonFilePath)) {
@@ -34,7 +32,6 @@ if (file_exists($jsonFilePath)) {
 
 echo "<script>var confusionMatrix = " . json_encode($data) . ";</script>";
 
-
 // Load JSON file
 $jsonData = file_get_contents('prediction_results.json');
 // Decode JSON data into PHP array
@@ -44,15 +41,17 @@ $data = json_decode($jsonData, true);
 $totalHoax = 0;
 $totalNonHoax = 0;
 
-// Iterate through each item and count predictions
 foreach ($data as $item) {
-    $predictedLabel = strtolower($item['predicted_label']); // Convert label to lowercase
+    $predictedLabel = strtolower($item['predicted_label']);
+    $actualLabel = strtolower($item['label']);
+
     if ($predictedLabel === 'hoax') {
         $totalHoax++;
     } elseif ($predictedLabel === 'non-hoax') {
         $totalNonHoax++;
     }
 }
+
 
 ?>
 
@@ -199,6 +198,9 @@ foreach ($data as $item) {
                         <li> <a class="waves-effect waves-dark" href="visualisasi_hasil.php" aria-expanded="false">
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
                         </li>
+                        <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -296,7 +298,7 @@ foreach ($data as $item) {
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
                                             <div class="card-body-custom p-2">
-                                                <h6 class="card-title card-header-custom m-0">Total Prediksi Hoax</h6>
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Prediksi Hoax</h6>
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="card-body-custom m-0"><?php echo $totalHoax; ?></p>
                                                     <i class="fa-solid fa-exclamation-triangle " style="color: #FFD43B;"></i>
@@ -307,7 +309,7 @@ foreach ($data as $item) {
                                     <div class="col-md-6">
                                         <div class="card card-custom shadow rounded-3">
                                             <div class="card-body-custom p-2">
-                                                <h6 class="card-title card-header-custom m-0">Total Prediksi Non-Hoax</h6>
+                                                <h6 class="card-title card-header-custom m-0">Jumlah Prediksi Non-Hoax</h6>
                                                 <div class="d-flex align-items-center justify-content-between">
                                                     <p class="card-body-custom m-0"><?php echo $totalNonHoax; ?></p>
                                                     <i class="fa-solid fa-check-circle" style="color:#b8e0d2;"></i>

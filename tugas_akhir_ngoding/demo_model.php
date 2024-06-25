@@ -1,41 +1,19 @@
 <?php
-include 'koneksi.php'; // Pastikan path ke file db.php benar
-$database = new Database();
-$conn = $database->connect();
+// Initialize a variable to hold the classification result
+$classificationResult = '';
 
-// Mengambil jumlah total data
-$sqlTotal = "SELECT COUNT(*) AS total FROM data_raw";
-$stmt = $conn->prepare($sqlTotal);
-$stmt->execute();
-$totalData = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $text = $_POST['inputText'];  // Capture raw text from user input
+    $escaped_text = escapeshellarg($text);  // Escape the text for shell command safety
 
-// Mengambil jumlah data training
-$sqlTraining = "SELECT COUNT(*) AS total FROM data_training";
-$stmt = $conn->prepare($sqlTraining);
-$stmt->execute();
-$totalTraining = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Command to execute Python script
+    $command = escapeshellcmd("python demo_model.py $escaped_text");
+    $output = shell_exec($command);  // Execute the command and capture the output
 
-// Mengambil jumlah data testing
-$sqlTesting = "SELECT COUNT(*) AS total FROM data_testing";
-$stmt = $conn->prepare($sqlTesting);
-$stmt->execute();
-$totalTesting = $stmt->fetch(PDO::FETCH_ASSOC);
-
-function countDataSetelahSplit($conn)
-{
-    $stmt = $conn->query("SELECT 'total' AS source, 
-    (SELECT COUNT(*) FROM data_training) + 
-    (SELECT COUNT(*) FROM data_testing) AS total;");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $result['total'];
+    // Create a more descriptive output to display on the page
+    $classificationResult = "<div class='alert alert-info mt-3'>Hasil Klasifikasi: <strong>" . htmlspecialchars($text) . "</strong> adalah <strong>" . htmlspecialchars($output) . "</strong></div>";
 }
-
-$jumlahDataSetelahSplit = countDataSetelahSplit($conn);
-
-$conn = null;  // Tutup koneksi database
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -65,20 +43,7 @@ $conn = null;  // Tutup koneksi database
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
-    <style>
-        .card-text {
-            font-size: 36px;
-        }
 
-        .card-body-icon {
-            position: absolute;
-            top: 50%;
-            right: 15px;
-            transform: translateY(-50%);
-            font-size: 24px;
-            /* Normal icon size */
-        }
-    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -173,8 +138,7 @@ $conn = null;  // Tutup koneksi database
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
-                                <<i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span>
-                            </a>
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
                         </li>
                     </ul>
                 </nav>
@@ -197,57 +161,23 @@ $conn = null;  // Tutup koneksi database
                 <!-- Bread crumb and right sidebar toggle -->
                 <!-- ============================================================== -->
                 <div class="row page-titles">
-                    <div class="col-md-6 align-self-center">
-                        <h3 class="text-themecolor">Dashboard</h3>
+                    <div class="col-md-5 align-self-center">
+                        <h3 class="text-themecolor">Demo Model</h3>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
+                            <li class="breadcrumb-item active">Demo Model</li>
+                        </ol>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card rounded-3 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data</h5>
-                                <p class="card-text"><?php echo $totalData['total']; ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-database"></i>
-                                </div>
-                            </div>
+                <div>
+                    <form method="post" class="mt-4">
+                        <div class="mb-3">
+                            <label for="inputText" class="form-label">Prediksi Teks</label>
+                            <input type="text" class="form-control" id="inputText" name="inputText" autocomplete="off" placeholder="Masukan teks atau berita" required>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card rounded-3 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Setelah Undersampling</h5>
-                                <p class="card-text"><?= $jumlahDataSetelahSplit ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-filter"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card rounded-3 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Training</h5>
-                                <p class="card-text"><?php echo $totalTraining['total']; ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-dumbbell"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card rounded-3   shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Testing</h5>
-                                <p class="card-text"><?php echo $totalTesting['total']; ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-vial"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                        <button type="submit" class="btn btn-primary">Prediksi</button>
+                    </form>
+                    <?php echo $classificationResult; ?>
                 </div>
 
             </div>
@@ -295,6 +225,7 @@ $conn = null;  // Tutup koneksi database
     <!-- Chart JS -->
     <script src="assets/js/dashboard1.js"></script>
     <script src="https://kit.fontawesome.com/32266cf13d.js" crossorigin="anonymous"></script>
+
 </body>
 
 </html>

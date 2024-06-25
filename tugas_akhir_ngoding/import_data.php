@@ -209,6 +209,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <li> <a class="waves-effect waves-dark" href="visualisasi_hasil.php" aria-expanded="false">
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
                         </li>
+                        <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
+                        </li>
                     </ul>
                 </nav>
                 <!-- End Sidebar navigation -->
