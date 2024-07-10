@@ -1,7 +1,7 @@
 import mysql.connector
 import json
 
-# Langkah 1: Koneksi ke Database
+""" Membuat koneksi ke database MySQL. """
 db = mysql.connector.connect(
     host="localhost",        # atau alamat IP server database
     user="root",    # ganti dengan username database Anda
@@ -11,7 +11,7 @@ db = mysql.connector.connect(
 
 cursor = db.cursor(dictionary=True)
 
-# Langkah 2: Memuat model JSON
+""" Memuat model prediksi dari file JSON. """
 with open('model.json', 'r') as file:
     data = json.load(file)
 
@@ -22,13 +22,13 @@ likelihoods = data[2]
 likelihoods_0 = likelihoods["0"]
 likelihoods_1 = likelihoods["1"]
 
-# Langkah 3: Mengambil Data Testing dari Database
+""" Mengambil data testing dari database untuk evaluasi. """
 cursor.execute("SELECT id_testing, real_text, clean_text, label FROM data_testing")
 data_testing = cursor.fetchall()
 
 results = []
 
-# Langkah 4: Menghitung posterior untuk setiap entri dalam data testing
+""" Menghitung posterior untuk setiap entri data testing berdasarkan model. """
 for row in data_testing:
     words = row['clean_text'].split()  # Asumsikan clean_text sudah dalam bentuk kata-kata terpisah
     prob_0 = prior_class_0
@@ -40,10 +40,10 @@ for row in data_testing:
         if word in likelihoods_1:
             prob_1 *= likelihoods_1[word]
     
-    # Menentukan label prediksi
+    """ Menentukan label prediksi berdasarkan probabilitas yang lebih tinggi. """
     predicted_label = 'hoax' if prob_0 > prob_1 else 'non-hoax'
     
-    # Menyimpan hasil
+    """ Menyimpan hasil ke dalam daftar untuk evaluasi lebih lanjut. """
     results.append({
         "id": row['id_testing'],
         "real_text": row['real_text'],
@@ -51,18 +51,18 @@ for row in data_testing:
         "predicted_label": predicted_label
     })
 
-# Langkah 5: Menyimpan hasil sebagai JSON
+""" Menyimpan hasil prediksi ke dalam file JSON. """
 with open('prediction_results.json', 'w') as outfile:
     json.dump(results, outfile, indent=4)
 
-# Langkah 1: Memuat hasil prediksi dari JSON
+""" Memuat hasil prediksi dari file JSON untuk analisis lebih lanjut. """
 with open('prediction_results.json', 'r') as file:
     predictions = json.load(file)
 
 # Inisialisasi confusion matrix components
 TP = TN = FP = FN = 0
 
-# Langkah 2: Menghitung komponen confusion matrix
+""" Menghitung komponen confusion matrix berdasarkan hasil prediksi. """
 for result in predictions:
     actual = result['label'].lower()
     predicted = result['predicted_label'].lower()
@@ -76,12 +76,12 @@ for result in predictions:
     elif actual == 'hoax' and predicted == 'non-hoax':
         FN += 1
 
-# Langkah 3: Menghitung metrik evaluasi
+""" Menghitung metrik evaluasi berdasarkan komponen confusion matrix. """
 accuracy = (TP + TN) / (TP + TN + FP + FN)
 precision = TP / (TP + FP) if (TP + FP) != 0 else 0
 recall = TP / (TP + FN) if (TP + FN) != 0 else 0
 
-# Menyiapkan dictionary untuk JSON
+""" Menyimpan metrik evaluasi ke dalam file JSON untuk dokumentasi dan analisis lebih lanjut. """
 confusion_matrix = {
     "TP (True Positive)": TP,
     "TN (True Negative)": TN,

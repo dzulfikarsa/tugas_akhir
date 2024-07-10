@@ -6,7 +6,7 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 import re
 from functools import lru_cache
 
-
+""" Inisialisasi pembuat stemmer dan remover untuk preprocessing teks Bahasa Indonesia """
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
@@ -18,11 +18,12 @@ def cached_stem(word):
     return stemmer.stem(word)
 
 def case_folding(text):
-    # Ubah teks menjadi huruf kecil
+    """ Ubah semua teks menjadi huruf kecil """
     text = text.lower()
     return text
 
 def replacing_slangword(text, slangword):
+    """ Mengubah slang kata menjadi kata baku berdasarkan kamus slang yang diberikan """
     # Pembuatan dictionary dari list slangword yang sudah ada
     slang_dict = {slang[2]: slang[1] for slang in slangword}
     # slang_dict = {}
@@ -35,14 +36,17 @@ def replacing_slangword(text, slangword):
     return ' '.join(slang_dict.get(word, word) for word in text.split())
 
 def cleansing(text):    
+    """ Hapus karakter non-alfabet dan spasi berlebih, hanya menyisakan kata-kata dan spasi tunggal """
     text = re.sub(r'[^a-z\s]+|\s+', ' ', text).strip()
     return text
 
 def stopword_removal(text):
+    """ Hapus stopword dari teks menggunakan remover yang telah diinisialisasi """
     text = stopword_remover.remove(text)
     return text
     
 def stemming(text):
+    """ Ubah kata-kata dalam teks ke bentuk dasar menggunakan fungsi stemming """
     # Langsung menggunakan comprehension dan join dalam satu baris
     return ' '.join(cached_stem(word) for word in text.split())
 
@@ -63,6 +67,7 @@ def stemming(text):
     # return stemmed_text
     
 def preprocessing(data, cursor):
+    """ Proses semua data; melakukan query untuk slangwords, lalu melakukan preprocessing """
     cursor.execute("SELECT * FROM slangword")
     slangword = cursor.fetchall()
     
@@ -88,7 +93,7 @@ if __name__ == "__main__":
 
     print("Current Working Directory:", os.getcwd())
 
-    # Menggunakan raw string untuk path
+    """ Memeriksa keberadaan file dan membuka file jika ada """
     file_path = r'C:\xampp\htdocs\tugas_akhir\tugas_akhir_ngoding\util\data.json'
 
     if os.path.exists(file_path):
@@ -122,5 +127,3 @@ if __name__ == "__main__":
     cursor.close()
     conn.close()
     print("Sukses")
-
-

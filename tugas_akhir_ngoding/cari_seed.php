@@ -70,7 +70,7 @@ $bestAccuracy = 0;
 $bestSeed = 0;
 $bestResults = array();
 $file_path = 'confusion_matrix.json';
-for ($i = 1000; $i < 2000; $i++) {
+for ($i = 1000; $i < 5000; $i++) {
     $seed = $i;
     srand($seed);
 

@@ -26,6 +26,25 @@ if (isset($_POST['mulai'])) {
     }
 }
 
+function getStatus($actual, $predicted)
+{
+    // Normalize the labels to lower case and trim any extra spaces
+    $actual = strtolower(trim($actual));
+    $predicted = strtolower(trim($predicted));
+
+    if ($actual == 'hoax' && $predicted == 'hoax') {
+        return '<span class="badge bg-success">TP (True Positive)</span>';
+    } elseif ($actual == 'non-hoax' && $predicted == 'hoax') {
+        return '<span class="badge bg-danger">FP (False Positive)</span>';
+    } elseif ($actual == 'non-hoax' && $predicted == 'non-hoax') {
+        return '<span class="badge bg-success">TN (True Negative)</span>';
+    } elseif ($actual == 'hoax' && $predicted == 'non-hoax') {
+        return '<span class="badge bg-danger">FN (False Negative)</span>';
+    } else {
+        return '<span class="badge bg-secondary">Unknown</span>';
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +67,12 @@ if (isset($_POST['mulai'])) {
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
+    <style>
+        table.table td:nth-child(5) {
+            font-size: 17px;
+            /* Increase font size for status column */
+        }
+    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -153,14 +178,7 @@ if (isset($_POST['mulai'])) {
                                                     <td><?= htmlspecialchars($row['real_text']) ?></td>
                                                     <td><?= htmlspecialchars($row['label']) ?></td>
                                                     <td><?= htmlspecialchars($row['predicted_label']) ?></td>
-                                                    <!-- Use Bootstrap badge classes for status -->
-                                                    <td>
-                                                        <?php if (strtolower($row['label']) == strtolower($row['predicted_label'])) : ?>
-                                                            <span class="badge bg-success">True</span>
-                                                        <?php else : ?>
-                                                            <span class="badge bg-danger">False</span>
-                                                        <?php endif; ?>
-                                                    </td>
+                                                    <td><?= getStatus($row['label'], $row['predicted_label']); ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>

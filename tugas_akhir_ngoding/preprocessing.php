@@ -352,7 +352,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $('#runPreprocessingBtn').click(function() {
                     Swal.fire({
                         title: 'Processing...',
-                        html: 'Preprocessing is currently running. Please wait...',
+                        html: 'Preprocessing sedang berjalan. Silakan tunggu...',
                         allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading()

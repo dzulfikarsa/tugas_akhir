@@ -2,7 +2,7 @@
 require 'koneksi.php'; // Assumes 'koneksi.php' sets up the database connection
 
 // Set default value for $show_card and initialize $message_import
-$show_card = false;
+$show_card_likelihood = $show_card_tfidf = false;
 $message_import = "";
 $probabilities = [];
 
@@ -13,7 +13,16 @@ if (file_exists($file_path)) {
     // Check if the last element of the array (which should contain the probabilities) is an array
     if (is_array(end($json_data))) {
         $probabilities = end($json_data);  // Get the last element which contains the probabilities
-        $show_card = true;
+        $show_card_likelihood = true;
+    }
+}
+
+// Check if the tf-idf.json file exists for TF-IDF data
+$file_path_tfidf = 'tf_idf.json';  // Adjust path according to your JSON file location
+if (file_exists($file_path_tfidf)) {
+    $tfidf_data = json_decode(file_get_contents($file_path_tfidf), true);
+    if (!empty($tfidf_data)) {
+        $show_card_tfidf = true;
     }
 }
 
@@ -136,10 +145,50 @@ if (isset($_POST['mulai'])) {
                         <button type="submit" class="btn btn-primary" name="mulai">Mulai</button>
                     </form>
 
-                    <!-- Conditional display of card content after data submission -->
-                    <?php if ($show_card) : ?>
+                    <?php if ($show_card_tfidf) : ?>
                         <div class="card">
-                            <div class="card-body">
+                            <div class="card-header">
+                                <h4>TF-IDF</h4> <!-- Judul Card di bagian atas -->
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                <?php if (!empty($tfidf_data)) : ?>
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Dokumen ke-</th>
+                                                <th>Kata</th>
+                                                <th>TF-IDF</th>
+                                                <th>Dokumen Kelas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($tfidf_data as $entries) : ?>
+                                                <?php foreach ($entries as $entry) : ?>
+                                                    <tr>
+                                                        <td><?= htmlspecialchars($entry[0]) ?></td>
+                                                        <td><?= htmlspecialchars($entry[1]) ?></td>
+                                                        <td><?= htmlspecialchars($entry[2]) ?></td>
+                                                        <td><?= $entry[3] == 0 ? 'Hoax' : 'Non-Hoax' ?></td>
+                                                    </tr>
+                                                <?php endforeach; ?>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+
+                                <?php else : ?>
+                                    <p><?= $message_import ?></p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                    <?php endif; ?>
+
+                    <?php if ($show_card_likelihood) : ?>
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>Probabilitas Likelihood</h4> <!-- Judul Card di bagian atas -->
+                            </div>
+                            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
                                 <?php if (!empty($probabilities)) : ?>
                                     <table class="table">
                                         <thead>
@@ -164,6 +213,7 @@ if (isset($_POST['mulai'])) {
                                 <?php endif; ?>
                             </div>
                         </div>
+
                     <?php endif; ?>
 
 
@@ -190,7 +240,6 @@ if (isset($_POST['mulai'])) {
     <script src="datatables/dataTables.bootstrap4.min.js"></script>
     <script src="datatables/datatables-demo.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 
 </body>
 
