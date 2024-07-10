@@ -32,21 +32,6 @@ if (isset($_POST['run_preprocessing'])) {
 }
 
 
-if (isset($_POST['update_label'])) {
-    $id = $_POST['id'];
-    $newLabel = $_POST['label'];
-    $updateQuery = "UPDATE data_preprocessing SET label = :label WHERE id_preprocessing = :id";
-    $stmt = $conn->prepare($updateQuery);
-    $stmt->bindParam(':label', $newLabel);
-    $stmt->bindParam(':id', $id);
-    if ($stmt->execute()) {
-        $message_update = "Label updated successfully.";
-    } else {
-        $message_update = "Failed to update label.";
-    }
-}
-
-
 $query = "SELECT id_preprocessing, teks, label FROM data_preprocessing";
 $stmt = $conn->prepare($query);
 $stmt->execute();
@@ -232,16 +217,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <tr>
                                             <td><?= htmlspecialchars($row['id_preprocessing']) ?></td>
                                             <td><?= htmlspecialchars($row['teks']) ?></td>
-                                            <td>
-                                                <form method="post" action="">
-                                                    <input type="hidden" name="id" value="<?= $row['id_preprocessing'] ?>">
-                                                    <input type="hidden" name="update_label" value="1">
-                                                    <select name="label" class="form-control status-dropdown" onchange="this.form.submit()">
-                                                        <option value="Hoax" <?= $row['label'] === 'Hoax' ? 'selected' : '' ?>>Hoax</option>
-                                                        <option value="Non-Hoax" <?= $row['label'] === 'Non-Hoax' ? 'selected' : '' ?>>Non-Hoax</option>
-                                                    </select>
-                                                </form>
-                                            </td>
+                                            <td><?= htmlspecialchars($row['label']) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
