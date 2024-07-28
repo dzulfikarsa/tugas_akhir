@@ -40,6 +40,7 @@ https://github.com/dzulfikarsa/tugas_akhir.git
 - **requests**: Untuk mengirim permintaan HTTP.
 - **csv**: Untuk operasi pembacaan dan penulisan file CSV.
 - **os** dan **shutil**: Untuk manajemen file dan direktori.
+- pyhton version 3.9.2
 
 ### Cara Menjalankan
 ```bash
