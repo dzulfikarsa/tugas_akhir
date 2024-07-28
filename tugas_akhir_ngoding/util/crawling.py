@@ -18,7 +18,7 @@ def crawling(value):
             'Accept': 'application/json'
         }
         data = {
-            'key': '528b20z21881dxz30b0ac2',
+            'key': 'API KEY',
             'method': 'content',
             'value': value,
             # 'limit': '1'
