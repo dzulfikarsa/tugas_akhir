@@ -1,9 +1,9 @@
 {
-    "TP (True Positive)": 46,
-    "TN (True Negative)": 36,
-    "FP (False Positive)": 5,
-    "FN (False Negative)": 6,
-    "Accuracy": 0.8817204301075269,
-    "Precision": 0.9019607843137255,
-    "Recall": 0.8846153846153846
+    "TP (True Positive)": 26,
+    "TN (True Negative)": 17,
+    "FP (False Positive)": 3,
+    "FN (False Negative)": 4,
+    "Accuracy": 0.86,
+    "Precision": 0.896551724137931,
+    "Recall": 0.8666666666666667
 }

@@ -1,57 +1,45 @@
 [
     {
-        "id": 8,
-        "real_text": "megawati serah tumpeng jokowi satu dukung ganjar",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 13,
-        "real_text": "kpu jember temu duga manipulasi suara dua tps",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 19,
-        "real_text": "bawaslu catat langgar pemilu jelang hari coblos",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
         "id": 25,
         "real_text": "gambar tangkap layar artikel fajar co id partai politik nyata tolak system pemilu proporsional tutup hasti kristiyanto bilang jangan sekali kali intervensi mk ketua mk ipar pak jokowi kalian bosa sengsara apa bisa laku",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 28,
-        "real_text": "hoaks hasil hitung suara pemilu luar negeri",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 29,
-        "real_text": "temu prabowo surya paloh bukan pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 39,
-        "real_text": "jelas soal kabar surat suara sampang coblos",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 41,
-        "real_text": "pakar hukum langgar pemilu tsm bukan ranah mk harus bawaslu",
+        "id": 33,
+        "real_text": "gibran sebut juta peluang green jobs",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 62,
-        "real_text": "sri mulyani coblos as salam satu jari kode alam semesta",
+        "id": 36,
+        "real_text": "presiden joko widodo bebas pajak usaha cina lama tahun",
+        "label": "Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 45,
+        "real_text": "golkar atas kaltim suara susul gerindra pdip",
+        "label": "Non-Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 57,
+        "real_text": "isi real count per februari capai persen",
         "label": "Hoax",
         "predicted_label": "hoax"
+    },
+    {
+        "id": 60,
+        "real_text": "masa tenang pemilu apk jalan kota bogor tertib",
+        "label": "Non-Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 64,
+        "real_text": "hakim mk cecar saksi ganjar soal temu ubah data suara sirekap",
+        "label": "Non-Hoax",
+        "predicted_label": "non-hoax"
     },
     {
         "id": 67,
@@ -60,88 +48,58 @@
         "predicted_label": "non-hoax"
     },
     {
-        "id": 70,
-        "real_text": "muhaimin tenaga asing dominasi industri hilir tambang benar",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 85,
-        "real_text": "adi napitupulu halang halang inspeksi dadak kantor kpu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 97,
-        "real_text": "jokowi perintah demo pemilu tangkap",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 99,
-        "real_text": "yang unjuk rasa depan kantor kpu maret",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 106,
-        "real_text": "tim anies ajak kubu ganjar lapor duga curang gibran monggo",
+        "id": 91,
+        "real_text": "bawaslu bal tidak lanjut lapor tim amin tidak penuh syarat",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 107,
-        "real_text": "bawaslu sebut jauh tidak temu bisa bataklan hasil pemilu",
+        "id": 94,
+        "real_text": "mahfud md sebut juta tani rerata kuasa hektare",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 113,
-        "real_text": "mk kabul gugat sengketa hasil pemilu awal april",
+        "id": 105,
+        "real_text": "indonesia pernah gagal bayar hutang luar negeri",
+        "label": "Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 123,
+        "real_text": "partai komunis cina biaya kampanye ganjar besar rp juta ada kampanye tunjuk pemilu bahasa mandarin",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 119,
-        "real_text": "ribu anak bangsa kritik perintah hadap keras",
+        "id": 127,
+        "real_text": "gerindra anies jadi gubernur capres bukti demokrasi era jokowi sangat baik",
+        "label": "Non-Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 139,
+        "real_text": "aksi tolak pemilu curang habib rizieq buat istana panik",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 142,
+        "real_text": "kubu siap ahli saksi bantah tim amin ganjar mahfud",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 120,
-        "real_text": "surya paloh sesal usung anies capres",
+        "id": 144,
+        "real_text": "kpu maju jadwal tetap hasil pemilu februari",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 124,
-        "real_text": "yang putus mk kait sengketa pilpres",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 133,
-        "real_text": "temu gudang kotak suara ganda makassar curang pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 135,
-        "real_text": "rekapitulasi nasional kpu prabowo gibran unggul gorontalo",
+        "id": 146,
+        "real_text": "prabowo gibran unggul tps jakut gelar coblos lanjut",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
-    },
-    {
-        "id": 137,
-        "real_text": "capres nomor umum seluruh partai dukung mundur kabinet",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 141,
-        "real_text": "tentang uang suap komunis cina curang pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
     },
     {
         "id": 148,
@@ -150,178 +108,46 @@
         "predicted_label": "non-hoax"
     },
     {
-        "id": 151,
-        "real_text": "mahfud md pulau madura kaya gas alam tidak optimal",
-        "label": "Non-Hoax",
-        "predicted_label": "hoax"
-    },
-    {
         "id": 154,
         "real_text": "hitung suara henti curang pemilu bongkar",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 156,
-        "real_text": "laksana jadwal kpu pilpres putar dua",
+        "id": 180,
+        "real_text": "yang temu gudang kotak suara ganda makassar curang pemilu",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 158,
-        "real_text": "pdip siap juta saksi seluruh tps coblos pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 160,
-        "real_text": "hasto ungkap giat ganjar mahfud masa tenang coblos",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 162,
-        "real_text": "tps serang gelar coblos ulang warga antusias pilih",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 169,
-        "real_text": "prabowo bawa ribu pasu tuntut istana tolak tunda pemilu",
+        "id": 184,
+        "real_text": "raya menang dukung anies muhaimin oleh persen real count",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 170,
-        "real_text": "gelombang datang ungsi rohingya menang calon tentu pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 171,
-        "real_text": "anies baswedan soal indeks demokrasi bebas bicara indonesia turun",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 200,
-        "real_text": "muhaimin sambut peluk prabowo jadi pilpres",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 203,
-        "real_text": "yang hercules marshal jaga istana presiden pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 211,
-        "real_text": "inpres nomor tahun bentuk komunis gaya baru",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 214,
-        "real_text": "ganjar pranowo sebut global peace index indonesia turun benar",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 216,
-        "real_text": "migrant care temu ribu nama ganda dapat johor bahru malaysia",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 223,
-        "real_text": "bahwa jokowi tidak libat tidak ikut kampanye kandidat mana pilpres",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 230,
-        "real_text": "polda metro gelar subuh keliling wujud cooling system pasca pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 235,
-        "real_text": "tangkal hoaks pemilu amsi beri jurnalis",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 238,
-        "real_text": "tim menang anies muhaimin deklarasi tim hukum",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 239,
-        "real_text": "anies baswedan tiongkok manfaat beberapa negara asean tahan pengaruh laut cina selatan",
+        "id": 191,
+        "real_text": "hak angket dpr tidak batal hasil pemilu mk wenang",
         "label": "Non-Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 240,
-        "real_text": "surat suara coblos sampang pemilu",
+        "id": 228,
+        "real_text": "paket beras gambar puan bagi jelang lebaran bukan kampanye pemilu",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 243,
-        "real_text": "bawaslu ungkap ribu surat suara via pos kuala lumpur coblos",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 245,
-        "real_text": "kpu umum hasil pemilu buka puasa hari",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 246,
-        "real_text": "massa aksi soal gugat sengketa pilpres demo patung kuda",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 251,
-        "real_text": "hotman paris bakal gabung tim hukum prabowo gibran hadap sengketa pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 256,
-        "real_text": "bawaslu jateng ungkap tidak langgar kait jokowi bagi bansos",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 268,
-        "real_text": "cincin usak surat suara pemilu",
+        "id": 275,
+        "real_text": "data kpu hasil pemilu mungut suara laku hasil tentu",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 274,
-        "real_text": "jatuh sakit usai tugas ketua pps brebes tinggal dunia",
+        "id": 277,
+        "real_text": "muhaimin iskandar target energi baru baru turun persen",
         "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 276,
-        "real_text": "pemilu ada debat capres cawapres",
-        "label": "Hoax",
         "predicted_label": "hoax"
-    },
-    {
-        "id": 280,
-        "real_text": "real count kpu pileg dpr ri pdip golkar gerindra",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
     },
     {
         "id": 281,
@@ -330,74 +156,8 @@
         "predicted_label": "hoax"
     },
     {
-        "id": 284,
-        "real_text": "tugas pemilu tinggal tembus orang",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 288,
-        "real_text": "kubu prabowo amuk puan tuju hak angket",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 293,
-        "real_text": "prabowo siap amplop cap jempol serang fajar",
-        "label": "Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 294,
-        "real_text": "salah tirto kurawal terbit e book judul lupa netralitas korban korban jawat",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 295,
-        "real_text": "kpps jawa timur aku gelembung suara paslon",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 299,
-        "real_text": "nyata jokowi tangkap kait demo pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 300,
-        "real_text": "isi gedung bawaslu ri bakar unjuk rasa kait pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 303,
-        "real_text": "hashim tegas prabowo tidak mundur di cukup mahfud",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 312,
-        "real_text": "kpu coret gibran cawapres jatuh denda rp miliar",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 313,
-        "real_text": "sri mulyani pemilu sebar konteks keliru",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 315,
-        "real_text": "pemilu tunda prabowo gibran diskualifikasi awal februari",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 318,
-        "real_text": "ganjar sebut buruh tuntut revisi uu cipta kerja",
+        "id": 297,
+        "real_text": "bawaslu serang temu beda jumlah suara hitung ulang tps",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
@@ -405,13 +165,7 @@
         "id": 327,
         "real_text": "gambar rumah ketua kpu hasyim ashari ambruk",
         "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 332,
-        "real_text": "rocky gerung tunjuk curang pemilu kpu bawaslu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
+        "predicted_label": "non-hoax"
     },
     {
         "id": 337,
@@ -420,128 +174,116 @@
         "predicted_label": "hoax"
     },
     {
-        "id": 338,
-        "real_text": "bawaslu temu pilih coblos lebih sekali tps",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 351,
-        "real_text": "bareskrim tetap ppln kuala lumpur jadi sangka langgar pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 358,
-        "real_text": "pakai hak pilih orang dan palsu data pemilu pidana",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 365,
-        "real_text": "mk terima daftar gugat sengketa hasil pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 378,
-        "real_text": "ai soeharto kampanye golkar",
+        "id": 339,
+        "real_text": "uang hilang bri efek pemilu serang bansos",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 381,
-        "real_text": "mahfud md sebut deforestasi tahun akhir lebih luas kali pulau madura",
+        "id": 344,
+        "real_text": "konten isi bahwa anggota kpps pemilu tinggal racun pki",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 345,
+        "real_text": "ganjar pranowo sebut tahun ada aksi terorisme indonesia benar",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 384,
-        "real_text": "ribu wna china beri ktp elektronik pemilu",
+        "id": 354,
+        "real_text": "bri guna uang nasabah bantu bansos perintah pemilu benar",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 390,
-        "real_text": "kepala desa amuk warga curang pemilu paslon ntb",
+        "id": 369,
+        "real_text": "ganjar pranowo sedia dokter pada hanya ribu dokter",
         "label": "Hoax",
-        "predicted_label": "hoax"
+        "predicted_label": "non-hoax"
     },
     {
-        "id": 393,
-        "real_text": "tidak terima kalah anies baswedan ikut turun pimpin demo",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 394,
-        "real_text": "yang presiden jokowi bagi sembilan bahan pokok depan istana merdeka pemilu",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 396,
-        "real_text": "pesan tom lembong soal anies muhaimin menang satu putar",
-        "label": "Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 398,
-        "real_text": "anies buat kampung haji indonesia arab saudi",
+        "id": 383,
+        "real_text": "momen prabowo bareng titiek soeharto didit temu rawan rabu biru",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 401,
-        "real_text": "anie cak imin salat jumat masjid nurul huda dekat jis",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 406,
-        "real_text": "jelang kampanye gbk rawan ganjar mahfud gelar hajat jaksel",
-        "label": "Non-Hoax",
-        "predicted_label": "non-hoax"
-    },
-    {
-        "id": 412,
-        "real_text": "massa bakar gedung bawaslu tolak hasil pemilu",
+        "id": 389,
+        "real_text": "pesan whatsapp pemberitahuan pemilu guna undang fisik",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 417,
-        "real_text": "mk putus ambang batas parlemen ubah pemilu",
-        "label": "Non-Hoax",
-        "predicted_label": "hoax"
-    },
-    {
-        "id": 433,
-        "real_text": "tentang ribu wna cina dapat e ktp pemilu",
+        "id": 391,
+        "real_text": "prabowo aku curang pemilu",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 435,
-        "real_text": "apa masa tenang pemilu kapan waktu laksana",
+        "id": 395,
+        "real_text": "dpr ri sepakat bentuk panitia khusus duga curang pemilu",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
     {
-        "id": 453,
-        "real_text": "benar kpu henti edar surat undang coblos",
+        "id": 400,
+        "real_text": "jadi olok olok internasional indonesia hasil pemilu tahu laksana",
         "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 456,
-        "real_text": "pdip optimis tahan kursi ketua dpr ri",
-        "label": "Non-Hoax",
+        "id": 405,
+        "real_text": "tangkal hoaks pemilu komako ugm gelar latih cek fakta",
+        "label": "Hoax",
         "predicted_label": "hoax"
     },
     {
-        "id": 460,
-        "real_text": "demokrat minta mungut suara ulang ketapang kalbar",
+        "id": 408,
+        "real_text": "yang kontainer angkut logistik pemilu prabowo gibran",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 410,
+        "real_text": "rekam suara surya paloh parah anies baswedan",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 415,
+        "real_text": "isi raya menang kandidat malaysia februari",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 437,
+        "real_text": "surya paloh cium tangan jokowi klaim jabat",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 441,
+        "real_text": "pimpin pondok pesantren tangerang lebak deklarasi dukung prabowo gibran",
+        "label": "Non-Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 445,
+        "real_text": "masa tenang pemilu jumlah apk lihat jaksel",
+        "label": "Non-Hoax",
+        "predicted_label": "non-hoax"
+    },
+    {
+        "id": 455,
+        "real_text": "tangkap layar artikel judul suara limpah pdi juang tidak butuh suara umat islam pemilu",
+        "label": "Hoax",
+        "predicted_label": "hoax"
+    },
+    {
+        "id": 477,
+        "real_text": "sidang mulai saksi ahli kpu bawaslu beri terang mk",
         "label": "Non-Hoax",
         "predicted_label": "non-hoax"
     },
@@ -552,9 +294,9 @@
         "predicted_label": "hoax"
     },
     {
-        "id": 503,
-        "real_text": "menko polhukam umum hasil pemilu sesuai rencana maret",
-        "label": "Non-Hoax",
+        "id": 490,
+        "real_text": "jadwal tetap hasil pemilu maju jadi februari maret",
+        "label": "Hoax",
         "predicted_label": "hoax"
     }
 ]

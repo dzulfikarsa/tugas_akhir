@@ -1,6 +1,6 @@
-import mysql.connector
-from tf_idf import tf_idf
-import json
+import mysql.connector # Mengimpor library mysql.connector untuk operasi database
+from tf_idf import tf_idf # Mengimpor fungsi tf_idf dari modul tf_idf.py
+import json # Mengimpor modul json untuk memanipulasi data JSON
 
 def konek_db():
     """Membuat koneksi ke database MySQL untuk memulai sesi dengan database."""
@@ -28,12 +28,12 @@ def save_to_json(data, filename):
 
 def hitung_kemunculan_global(data):
     """Menghitung kata unik dalam dataset untuk persiapan perhitungan TF-IDF."""
-    global_kemunculan = []
+    global_kemunculan = [] # List untuk menyimpan kata unik
     for baris in data:
         kata_kalimat = baris[2].split()  # Memisahkan teks menjadi kata-kata
         for kata in kata_kalimat:
-            if kata not in global_kemunculan:
-                global_kemunculan.append(kata)
+            if kata not in global_kemunculan: # Jika kata belum ada di list
+                global_kemunculan.append(kata) # Tambahkan kata ke list
     return global_kemunculan
 
 def hitung_probabilitas_prior(data):
@@ -45,8 +45,8 @@ def hitung_probabilitas_prior(data):
             jumlah_hoax += 1
         else:
             jumlah_non_hoax += 1
-    probabilitas_prior_class_0 = jumlah_hoax / len(data)
-    probabilitas_prior_class_1 = jumlah_non_hoax / len(data)
+    probabilitas_prior_class_0 = jumlah_hoax / len(data)  # Hitung probabilitas untuk Hoax
+    probabilitas_prior_class_1 = jumlah_non_hoax / len(data) # Hitung probabilitas untuk Non-Hoax
     return probabilitas_prior_class_0, probabilitas_prior_class_1
 
 def hitung_probabilitas_likelihood(total_tf_idf, total_idf, data):
@@ -103,25 +103,25 @@ def hitung_probabilitas_likelihood(total_tf_idf, total_idf, data):
 
 def naive_bayes():
     """Fungsi utama untuk menjalankan model Naive Bayes."""
-    data = ambil_data()
+    data = ambil_data() # Mengambil data dari database
     data = [
         (row[0], row[1], row[2], 0 if row[3] == 'Hoax' else 1) 
         for row in data
     ]
-    data_teks = [row[2] for row in data]
+    data_teks = [row[2] for row in data] # Mengekstrak teks dari data
 
-    hasil_tf_idf, hasil_idf = tf_idf(data)
-    probabilitas_prior_class_0, probabilitas_prior_class_1 = hitung_probabilitas_prior(data)
+    hasil_tf_idf, hasil_idf = tf_idf(data) # Mendapatkan hasil TF-IDF dan IDF
+    probabilitas_prior_class_0, probabilitas_prior_class_1 = hitung_probabilitas_prior(data) # Menghitung probabilitas prior
 
-    probabilitas_likelihood = hitung_probabilitas_likelihood(hasil_tf_idf, hasil_idf, data)
-    save_to_json((probabilitas_prior_class_0, probabilitas_prior_class_1,probabilitas_likelihood), 'model.json')
+    probabilitas_likelihood = hitung_probabilitas_likelihood(hasil_tf_idf, hasil_idf, data) # Menghitung probabilitas likelihood
+    save_to_json((probabilitas_prior_class_0, probabilitas_prior_class_1,probabilitas_likelihood), 'model.json') # Menyimpan model dalam format JSON
 
     return probabilitas_likelihood
 
 def main():
     """Fungsi utama yang mengeksekusi model Naive Bayes."""
-    hasil = naive_bayes()
-    print(json.dumps(hasil))
+    hasil = naive_bayes() # Menjalankan Naive Bayes dan mendapatkan hasil
+    print(json.dumps(hasil))  # Mencetak hasil dalam format JSON
     
 if __name__ == '__main__':
     main()

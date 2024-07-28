@@ -15,7 +15,7 @@ stopword_remover = factory.create_stop_word_remover()
 
 @lru_cache(maxsize=10000)  # Cache hingga 10,000 kata unik
 def cached_stem(word):
-    return stemmer.stem(word)
+    return stemmer.stem(word) # Mengembalikan bentuk dasar kata
 
 def case_folding(text):
     """ Ubah semua teks menjadi huruf kecil """
@@ -24,7 +24,7 @@ def case_folding(text):
 
 def replacing_slangword(text, slangword):
     """ Mengubah slang kata menjadi kata baku berdasarkan kamus slang yang diberikan """
-    # Pembuatan dictionary dari list slangword yang sudah ada
+    # Membuat dictionary dari data slangword yang diambil dari database
     slang_dict = {slang[2]: slang[1] for slang in slangword}
     # slang_dict = {}
     # for slang in slangword:
@@ -37,18 +37,18 @@ def replacing_slangword(text, slangword):
 
 def cleansing(text):    
     """ Hapus karakter non-alfabet dan spasi berlebih, hanya menyisakan kata-kata dan spasi tunggal """
-    text = re.sub(r'[^a-z\s]+|\s+', ' ', text).strip()
+    text = re.sub(r'[^a-z\s]+|\s+', ' ', text).strip() # Hapus semua yang bukan huruf atau spasi berlebih
     return text
 
 def stopword_removal(text):
     """ Hapus stopword dari teks menggunakan remover yang telah diinisialisasi """
-    text = stopword_remover.remove(text)
+    text = stopword_remover.remove(text) # Gunakan remover yang telah diinisialisasi untuk menghapus stopword
     return text
     
 def stemming(text):
     """ Ubah kata-kata dalam teks ke bentuk dasar menggunakan fungsi stemming """
     # Langsung menggunakan comprehension dan join dalam satu baris
-    return ' '.join(cached_stem(word) for word in text.split())
+    return ' '.join(cached_stem(word) for word in text.split()) # Gunakan fungsi stem yang sudah di-cache untuk efisiensi
 
     # words = text.split()  # Memisahkan teks menjadi kata-kata
     # stemmed_words = []  # Inisialisasi daftar untuk menyimpan kata-kata yang sudah di-stem atau yang dikecualikan
@@ -68,16 +68,16 @@ def stemming(text):
     
 def preprocessing(data, cursor):
     """ Proses semua data; melakukan query untuk slangwords, lalu melakukan preprocessing """
-    cursor.execute("SELECT * FROM slangword")
+    cursor.execute("SELECT * FROM slangword") #ambil semua dari table slangword
     slangword = cursor.fetchall()
     
     for baris in data:
-        hasil = case_folding(baris['title'])
-        hasil = cleansing(hasil)
-        hasil = stopword_removal(hasil)
-        hasil = replacing_slangword(hasil, slangword)
-        hasil = stemming(hasil)
-        baris['title'] = hasil
+        hasil = case_folding(baris['title']) # Lakukan case folding
+        hasil = cleansing(hasil) # Lakukan pembersihan
+        hasil = stopword_removal(hasil) # Hapus stopwords
+        hasil = replacing_slangword(hasil, slangword) # Ganti slang words
+        hasil = stemming(hasil) # Lakukan stemming
+        baris['title'] = hasil # Simpan hasil akhir kembali ke data
 
     return data
 
@@ -102,11 +102,11 @@ if __name__ == "__main__":
         # print("Data loaded successfully:", data)
     else:
         print(f"File not found: {file_path}")
-        data = []  # Inisialisasi 'data' sebagai list kosong untuk menghindari NameError
+        data = []  # Jika tidak ada file, inisialisasi data sebagai list kosong
 
     processed_data = preprocessing(data, cursor)  # Proses title
-    insert_query = "INSERT INTO data_preprocessing (id_preprocessing, teks, label) VALUES (%s, %s, %s)"
-    insert_values = []
+    insert_query = "INSERT INTO data_preprocessing (id_preprocessing, teks, label) VALUES (%s, %s, %s)" #
+    insert_values = [] # Inisialisasi list untuk nilai yang akan di-insert
 
     for item in processed_data:
         original_id = item['id_raw']
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         # Lakukan batch insert
         if len(insert_values) >= 100:  # Misalnya batch size adalah 100
             cursor.executemany(insert_query, insert_values)
-            insert_values = []
+            insert_values = [] # Kosongkan list setelah insert
 
     # Insert sisa data jika ada
     if insert_values:

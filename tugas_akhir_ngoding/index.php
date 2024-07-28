@@ -1,41 +1,29 @@
 <?php
-include 'koneksi.php'; // Pastikan path ke file db.php benar
-$database = new Database();
-$conn = $database->connect();
+include 'koneksi.php'; // Memasukkan file koneksi.php yang berisi detail koneksi ke database
+$database = new Database(); // Membuat objek dari kelas Database
+$conn = $database->connect(); // Memanggil fungsi connect yang ada pada kelas Database untuk membuka koneksi ke database    
 
 // Mengambil jumlah total data
-$sqlTotal = "SELECT COUNT(*) AS total FROM data_raw";
-$stmt = $conn->prepare($sqlTotal);
+$sqlTotal = "SELECT COUNT(*) AS total FROM data_raw"; // ambil kemudian hitung total data di tabel data_raw
+$stmt = $conn->prepare($sqlTotal); // Menyiapkan statement SQL untuk dieksekusi
+$stmt->execute(); // Menjalankan statement SQL yang telah disiapkan
+$totalData = $stmt->fetch(PDO::FETCH_ASSOC); // Mengambil hasil query dan menyimpannya dalam bentuk array asosiatif
+
+// Mengambil jumlah data hoax
+$sqlHoax = "SELECT COUNT(*) AS hoax_count FROM data_raw WHERE status = 'Hoax'"; // ambil kemudian hitung jumlah data dengan status 'Hoax' di table data_raw
+$stmt = $conn->prepare($sqlHoax);
 $stmt->execute();
-$totalData = $stmt->fetch(PDO::FETCH_ASSOC);
+$hoaxData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Mengambil jumlah data training
-$sqlTraining = "SELECT COUNT(*) AS total FROM data_training";
-$stmt = $conn->prepare($sqlTraining);
+// Mengambil jumlah data non-hoax
+$sqlNonHoax = "SELECT COUNT(*) AS nonhoax_count FROM data_raw WHERE status = 'Non-hoax'"; // ambil kemudian hitung jumlah data dengan status 'Non-Hoax' di table data_raw
+$stmt = $conn->prepare($sqlNonHoax);
 $stmt->execute();
-$totalTraining = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Mengambil jumlah data testing
-$sqlTesting = "SELECT COUNT(*) AS total FROM data_testing";
-$stmt = $conn->prepare($sqlTesting);
-$stmt->execute();
-$totalTesting = $stmt->fetch(PDO::FETCH_ASSOC);
-
-function countDataSetelahSplit($conn)
-{
-    $stmt = $conn->query("SELECT 'total' AS source, 
-    (SELECT COUNT(*) FROM data_training) + 
-    (SELECT COUNT(*) FROM data_testing) AS total;");
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
-    return $result['total'];
-}
-
-$jumlahDataSetelahSplit = countDataSetelahSplit($conn);
+$nonHoaxData = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $conn = null;  // Tutup koneksi database
 
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -163,6 +151,9 @@ $conn = null;  // Tutup koneksi database
                         <li> <a class="waves-effect waves-dark" href="split_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-scissors"></i><span class="hide-menu">Split Data</span></a>
                         </li>
+                        <li> <a class="waves-effect waves-dark" href="balancing.php" aria-expanded="false">
+                                <i class="fa-solid fa-scale-balanced"></i><span class="hide-menu">Balancing</span></a>
+                        </li>
                         <li> <a class="waves-effect waves-dark" href="modelling.php" aria-expanded="false">
                                 <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
                         </li>
@@ -202,7 +193,7 @@ $conn = null;  // Tutup koneksi database
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="card rounded-3 shadow-sm">
                             <div class="card-body">
                                 <h5 class="card-title">Jumlah Data</h5>
@@ -213,43 +204,29 @@ $conn = null;  // Tutup koneksi database
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <div class="card rounded-3 shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Setelah Undersampling</h5>
-                                <p class="card-text"><?= $jumlahDataSetelahSplit ?></p>
+                                <h5 class="card-title">Jumlah Data Hoax</h5>
+                                <p class="card-text"><?php echo $hoaxData['hoax_count']; ?></p>
                                 <div class="card-body-icon">
-                                    <i class="fa-solid fa-filter"></i>
+                                    <i class="fa-solid fa-exclamation-triangle"></i> <!-- Icon for Hoax -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card rounded-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Non-Hoax</h5>
+                                <p class="card-text"><?php echo $nonHoaxData['nonhoax_count']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-check-circle"></i> <!-- Icon for Non-Hoax -->
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card rounded-3 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Training</h5>
-                                <p class="card-text"><?php echo $totalTraining['total']; ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-dumbbell"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card rounded-3   shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">Jumlah Data Testing</h5>
-                                <p class="card-text"><?php echo $totalTesting['total']; ?></p>
-                                <div class="card-body-icon">
-                                    <i class="fa-solid fa-vial"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
             <!-- ============================================================== -->
             <!-- End Container fluid  -->

@@ -1,42 +1,65 @@
 <?php
-require 'koneksi.php'; // Memasukkan file koneksi.php
-$database = new Database(); // Membuat instance dari kelas Database
-$conn = $database->connect(); // Memanggil fungsi connect untuk mendapatkan koneksi database
+include 'koneksi.php'; // Pastikan path ke file db.php benar
+$database = new Database();
+$conn = $database->connect();
 
-// Handle Preprocessing
-if (isset($_POST['run_preprocessing'])) {
-    $sql = "SELECT * FROM data_raw";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
+$stmtDataTraining = "SELECT COUNT(*) AS total FROM data_training";
+$stmt = $conn->prepare($stmtDataTraining);
+$stmt->execute();
+$totalDataTraining = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmtDataTrainingHoax = "SELECT COUNT(*) AS total FROM data_training WHERE label = 'Hoax'";
+$stmt = $conn->prepare($stmtDataTrainingHoax);
+$stmt->execute();
+$totalDataTrainingHoax = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (count($result) > 0) {
-        $data = array();
-        foreach ($result as $row) {
-            $data[] = $row;
-        }
+$stmtDataTrainingNonHoax = "SELECT COUNT(*) AS total FROM data_training WHERE label = 'Non-Hoax'";
+$stmt = $conn->prepare($stmtDataTrainingNonHoax);
+$stmt->execute();
+$totalDataTrainingNonHoax = $stmt->fetch(PDO::FETCH_ASSOC);
+$balancingDone = false;
 
-        // Menyimpan data ke file JSON
-        $filepath = 'C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\data.json';
-        file_put_contents($filepath, json_encode($data));
-
-        // Menjalankan script Python
-        $command = "python C:\\xampp\\htdocs\\tugas_akhir\\tugas_akhir_ngoding\\util\\preprocessing.py";
-        $output = shell_exec($command);
-        $message_preprocessing = "Semua data berhasil dipreprocessing";
-        $pythonOutput = $output ? $output : "Python script did not produce any output.";
+if (isset($_POST['balancing'])) {
+    if ($totalDataTrainingHoax > $totalDataTrainingNonHoax) {
+        $jumlahLebih = $totalDataTrainingHoax['total'] - $totalDataTrainingNonHoax['total'];
+        $stmtBalancingDataTrainingHoax = "DELETE dt FROM data_training dt
+                                          JOIN (
+                                            SELECT id_training
+                                            FROM data_training
+                                            WHERE label = 'Hoax'
+                                            ORDER BY id_training DESC
+                                            LIMIT $jumlahLebih
+                                          ) sub ON dt.id_training = sub.id_training";
+        $stmt = $conn->prepare($stmtBalancingDataTrainingHoax);
+        $stmt->execute();
     } else {
-        $message_preprocessing = "Error: Data belum ada atau tidak ditemukan.";
+        $jumlahLebih = $totalDataTrainingNonHoax['total'] - $totalDataTrainingHoax['total'];
+        $stmtBalancingDataTrainingNonHoax = "DELETE dt FROM data_training dt
+                                             JOIN (
+                                               SELECT id_training
+                                               FROM data_training
+                                               WHERE label = 'Non-Hoax'
+                                               ORDER BY id_training DESC
+                                               LIMIT $jumlahLebih
+                                             ) sub ON dt.id_training = sub.id_training";
+        $stmt = $conn->prepare($stmtBalancingDataTrainingNonHoax);
+        $stmt->execute();
     }
+    echo "<script>
+            Swal.fire({
+                title: 'Balancing Selesai',
+                text: 'Data training telah berhasil di-balancing.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then((result) => {
+            });
+        </script>";
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
 }
 
-
-$query = "SELECT id_preprocessing, teks, label FROM data_preprocessing"; 
-$stmt = $conn->prepare($query);
-$stmt->execute();
-$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +73,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="description" content="AdminWrap Lite is powerful and clean admin dashboard template, inpired from Bootstrap Framework">
     <meta name="robots" content="noindex,nofollow">
     <title>Deteksi Hoax</title>
-    <link rel="canonical" href="https://www.wrappixel.com/templates/adminwrap-lite/" />
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon.png">
     <!-- Bootstrap Core CSS -->
@@ -67,12 +89,22 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="assets/css/pages/dashboard1.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
     <link href="assets/css/colors/default.css" id="theme" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        .card-text {
+            font-size: 36px;
+        }
+
+        .card-body-icon {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            font-size: 24px;
+            /* Normal icon size */
+        }
+    </style>
 </head>
 
 <body class="fix-header fix-sidebar card-no-border">
@@ -98,8 +130,8 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Logo -->
                 <!-- ============================================================== -->
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="index.html">
-                        <h2>Deteksi Hoax</h2>
+                    <a class="navbar-brand" href="index.php">
+                        <h3>Deteksi Hoax</h3>
                     </a>
                 </div>
                 <!-- ============================================================== -->
@@ -170,7 +202,8 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <i class="fa-solid fa-chart-column"></i><span class="hide-menu">Visualisasi Hasil</span></a>
                         </li>
                         <li> <a class="waves-effect waves-dark" href="demo_model.php" aria-expanded="false">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span></a>
+                                <<i class="fa-solid fa-wand-magic-sparkles"></i><span class="hide-menu">Demo Model</span>
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -194,106 +227,147 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- ============================================================== -->
                 <div class="row page-titles">
                     <div class="col-md-5 align-self-center">
-                        <h3 class="text-themecolor">Labelling</h3>
+                        <h3 class="text-themecolor">Balancing</h3>
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item"><a href="index.php">Beranda</a></li>
-                            <li class="breadcrumb-item active">Labelling</li>
+                            <li class="breadcrumb-item active">Balancing</li>
                         </ol>
                     </div>
                 </div>
-
-                <div class="container mt-5">
-                    <!-- Card Container -->
-                    <div class="card">
-                        <!-- Card Body -->
-                        <div class="card-body">
-                            <table class="table table-striped" id="dataTable">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th style="width: 60%;">Data Bersih</th>
-                                        <th>Label</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($results as $row) : ?>
-                                        <tr>
-                                            <td><?= htmlspecialchars($row['id_preprocessing']) ?></td>
-                                            <td><?= htmlspecialchars($row['teks']) ?></td>
-                                            <td><?= htmlspecialchars($row['label']) ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card rounded-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Training</h5>
+                                <p class="card-text"><?php echo $totalDataTraining['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card rounded-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Hoax</h5>
+                                <p class="card-text"><?php echo $totalDataTrainingHoax['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card rounded-3 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title">Jumlah Data Non-Hoax</h5>
+                                <p class="card-text"><?php echo $totalDataTrainingNonHoax['total']; ?></p>
+                                <div class="card-body-icon">
+                                    <i class="fa-solid fa-database"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- End Container fluid  -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- footer -->
-                <!-- ============================================================== -->
-                <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
-                <!-- ============================================================== -->
-                <!-- End footer -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- End Page wrapper  -->
-                <!-- ============================================================== -->
+                <div class="row">
+                    <form method="post">
+                        <button type="submit" class="btn btn-primary" name="balancing" style="width: fit-content;">Seimbangkan</button>
+                    </form>
+                </div>
+                <div>
+                    <canvas id="balanceChart" width="400" height="200"></canvas>
+                </div>
+
+
             </div>
             <!-- ============================================================== -->
-            <!-- End Wrapper -->
+            <!-- End Container fluid  -->
             <!-- ============================================================== -->
             <!-- ============================================================== -->
-            <!-- All Jquery -->
+            <!-- footer -->
             <!-- ============================================================== -->
-            <script src="assets/node_modules/jquery/jquery.min.js"></script>
-            <!-- Bootstrap popper Core JavaScript -->
-            <script src="assets/node_modules/bootstrap/js/bootstrap.bundle.min.js"></script>
-            <!-- slimscrollbar scrollbar JavaScript -->
-            <script src="assets/js/perfect-scrollbar.jquery.min.js"></script>
-            <!--Wave Effects -->
-            <script src="assets/js/waves.js"></script>
-            <!--Menu sidebar -->
-            <script src="assets/js/sidebarmenu.js"></script>
-            <!--Custom JavaScript -->
-            <script src="assets/js/custom.min.js"></script>
+            <footer class="footer"> Tugas Akhir - Dzulfikar Saif Assalam</footer>
             <!-- ============================================================== -->
-            <!-- This page plugins -->
+            <!-- End footer -->
             <!-- ============================================================== -->
-            <!--morris JavaScript -->
-            <script src="assets/node_modules/raphael/raphael-min.js"></script>
-            <script src="assets/node_modules/morrisjs/morris.min.js"></script>
-            <!--c3 JavaScript -->
-            <script src="assets/node_modules/d3/d3.min.js"></script>
-            <script src="assets/node_modules/c3-master/c3.min.js"></script>
-            <!-- Chart JS -->
-            <script src="assets/js/dashboard1.js"></script>
-            <script src="https://kit.fontawesome.com/32266cf13d.js" crossorigin="anonymous"></script>
+        </div>
+        <!-- ============================================================== -->
+        <!-- End Page wrapper  -->
+        <!-- ============================================================== -->
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Wrapper -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- All Jquery -->
+    <!-- ============================================================== -->
+    <script src="assets/node_modules/jquery/jquery.min.js"></script>
+    <!-- Bootstrap popper Core JavaScript -->
+    <script src="assets/node_modules/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- slimscrollbar scrollbar JavaScript -->
+    <script src="assets/js/perfect-scrollbar.jquery.min.js"></script>
+    <!--Wave Effects -->
+    <script src="assets/js/waves.js"></script>
+    <!--Menu sidebar -->
+    <script src="assets/js/sidebarmenu.js"></script>
+    <!--Custom JavaScript -->
+    <script src="assets/js/custom.min.js"></script>
+    <!-- ============================================================== -->
+    <!-- This page plugins -->
+    <!-- ============================================================== -->
+    <!--morris JavaScript -->
+    <script src="assets/node_modules/raphael/raphael-min.js"></script>
+    <script src="assets/node_modules/morrisjs/morris.min.js"></script>
+    <!--c3 JavaScript -->
+    <script src="assets/node_modules/d3/d3.min.js"></script>
+    <script src="assets/node_modules/c3-master/c3.min.js"></script>
+    <!-- Chart JS -->
+    <script src="assets/js/dashboard1.js"></script>
+    <script src="https://kit.fontawesome.com/32266cf13d.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('balanceChart').getContext('2d');
+            const balanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hoax', 'Non-Hoax'],
+                    datasets: [{
+                        label: 'Jumlah Data Training',
+                        data: [<?= $totalDataTrainingHoax['total'] ?>, <?= $totalDataTrainingNonHoax['total'] ?>],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            onClick: (e) => e.stopPropagation(),
+                            labels: {
+                                usePointStyle: false, // This disables the point style, i.e., the symbol
+                                boxWidth: 0 // Set the width of the colored box to 0 to hide it
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
 
-            <!-- Page level plugins -->
-            <script src="datatables/jquery.dataTables.min.js"></script>
-            <script src="datatables/dataTables.bootstrap4.min.js"></script>
-
-            <!-- Page level custom scripts -->
-            <script src="datatables/datatables-demo.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-            <script>
-                $(document).ready(function() {
-                    // Check for delete success
-                    <?php if ($deleteSuccess) : ?>
-                        Swal.fire({
-                            title: 'Deleted!',
-                            text: 'Data berhasil dihapus.',
-                            icon: 'success',
-                            confirmButtonText: 'Ok'
-                        });
-                    <?php endif; ?>
-
-                });
-            </script>
 
 </body>
 

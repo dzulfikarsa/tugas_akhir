@@ -189,6 +189,9 @@ foreach ($data as $item) {
                         <li> <a class="waves-effect waves-dark" href="split_data.php" aria-expanded="false">
                                 <i class="fa-solid fa-scissors"></i><span class="hide-menu">Split Data</span></a>
                         </li>
+                        <li> <a class="waves-effect waves-dark" href="balancing.php" aria-expanded="false">
+                                <i class="fa-solid fa-scale-balanced"></i><span class="hide-menu">Balancing</span></a>
+                        </li>
                         <li> <a class="waves-effect waves-dark" href="modelling.php" aria-expanded="false">
                                 <i class="fa-solid fa-code-compare"></i><span class="hide-menu">Modelling</span></a>
                         </li>
@@ -428,8 +431,6 @@ foreach ($data as $item) {
                 // Optionally, update the DOM to reflect that no data is available
             }
         });
-
-
 
         function renderPredictionChart(totalHoax, totalNonHoax) {
             const ctx = document.getElementById('predictionChart').getContext('2d');

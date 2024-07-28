@@ -3,9 +3,9 @@
 class Database
 {
     private $host = "localhost";
-    private $username = "root"; // Ganti dengan username database Anda
-    private $password = ""; // Ganti dengan password database Anda
-    private $database = "deteksi_hoax"; // Ganti dengan nama database Anda
+    private $username = "root";
+    private $password = "";
+    private $database = "deteksi_hoax";
     private $conn;
 
     // Fungsi untuk melakukan koneksi ke database
